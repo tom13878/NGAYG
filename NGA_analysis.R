@@ -15,13 +15,21 @@ library(moments)
 library(tidyr)
 library(openxlsx)
 
-wdPath <- "D:\\Dropbox\\Michiel_research\\2285000066 Africa Maize Yield Gap\\Analysis\\NGA"
+wdPath <- "D:\\Data\\Projects\\NGAYG"
 setwd(wdPath)
-
+surveyPath <- "N:\\Internationaal Beleid  (IB)\\Projecten\\2285000066 Africa Maize Yield Gap\\SurveyData\\"
 options(scipen=999)
 
-# read in the data
-NGA2010_raw <- readRDS("Data/NGA_data_2010.rds")
+############################################
+############## READ THE DATA ###############
+############################################
+source(file.path(surveyPath, "Code\\NGA\\NGA_2010.r"))
+source(file.path(surveyPath, "Code\\NGA\\NGA_2012.r"))
+
+
+
+                      
+                      
 NGA2012_raw <- readRDS("Data/NGA_data_2012.rds")
 
 #######################################
