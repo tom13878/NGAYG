@@ -3,6 +3,18 @@
 #######################################
 
 
+############################################
+############## READ THE DATA ###############
+############################################
+
+source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2010.r")
+source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2012.r")
+
+
+#######################################
+############## PACKAGES ETC ###########
+#######################################
+
 library(plyr)
 library(dplyr)
 library(stargazer)
@@ -15,171 +27,198 @@ library(moments)
 library(tidyr)
 library(openxlsx)
 
-wdPath <- "D:\\Data\\Projects\\NGAYG"
+dataPath <- "N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/"
+wdPath <- "D:\\Dropbox\\Michiel_research\\2285000066 Africa Maize Yield Gap"
 setwd(wdPath)
-surveyPath <- "N:\\Internationaal Beleid  (IB)\\Projecten\\2285000066 Africa Maize Yield Gap\\SurveyData\\"
+
 options(scipen=999)
 
-############################################
-############## READ THE DATA ###############
-############################################
-source(file.path(surveyPath, "Code\\NGA\\NGA_2010.r"))
-source(file.path(surveyPath, "Code\\NGA\\NGA_2012.r"))
+
+#######################################
+###### POOLED DATABASE ################
+#######################################
+
+# get all name variables that are common to the three waves
+good <- Reduce(intersect, list(names(NGA2010), names(NGA2012)))
+
+# select only those names common in both waves
+NGA2010_2 <- NGA2010[, good]
+NGA2012_2 <- NGA2012[, good]
+
+# new full dataset
+dbP <- rbind(NGA2010_2, NGA2012_2)
+
+# Remove labels and factors as otherwise there is an error caused by haven
+dbP[] <- lapply(dbP, unclass)
 
 
+lapply(dbP, class)
 
-                      
-                      
-NGA2012_raw <- readRDS("Data/NGA_data_2012.rds")
 
 #######################################
 ############## CLEANING ###############
 #######################################
 
-# remove plots which have more than 7 crops on them
-# add dummy variables for number of crops. In this case
-# seven is actually the maximum number of crops
+# Create rel_harv_area variable
+dbP$area_farmer[dbP$area_farmer %in% 0] <- NA
+dbP$harv_area[dbP$harv_area %in% 0] <- NA
+ 
+dbP <- dbP %>%
+  mutate( sh_harv_area = harv_area/area_farmer,
+          sh_harv_area = ifelse(sh_harv_area >1, 1, sh_harv_area), # for some farmers the harvested area > plot size. Set to 1
+          rel_harv_area = sh_harv_area * area_gps)
 
-#NGA2010 <- NGA2010[!NGA2010$crop_count > 7,]
+# Create id for plots
+dbP <- dbP %>% 
+  mutate(id=1:dim(.)[1]) 
+
+# Cleaning and analysis depends strongly on which measure is chosen for area, which is the denominator for many variables.
+# there are three possible yield variables. 
+# that can be created for the last two waves of data. 
+# 1. yld1: above uses the full gps areas as denominator
+# 2. yld2: uses harvested area as denominator
+# 3. yld3: Uses relative harvest area to correct gps area
+# To simplify the code we set these values in this part. Subsequent analysis code can then be used for any definition of yield.
+
+# We choose rel_harv_area (yld3)
+
+dbP <- dbP %>% 
+  mutate(area = area_gps, 
+         yld = crop_qty_harv/area,
+         N = N/area)
+
 
 # cap yield at 15872 kg/ha, the highest potential yield in NGA (not water limited)
-NGA2010 <- filter(NGA2010_raw, yld <= 15872.93341)
+dbP <- filter(dbP, yld <= 15872.93341)
 
 # Sample includes very small plots <0.005 ha that bias result upwards and very large >35 ha. 
 # As we focus on small scale farmers we restrict area size
-NGA2010 <- filter(NGA2010, area_gps >=0.01 & area_gps <=10)
+dbP <- filter(dbP, area_gps >=0.01 & area_gps <=10)
 
 # restrict attention to plots that use N < 400. There is one outlier of around 700 and some super large ones that are removed.
-NGA2010 <- filter(NGA2010, N < 1000)
+dbP <- filter(dbP, N < 700)
+
+
+
 
 # Select relevant variables and complete cases
-NGA2010 <- NGA2010 %>% 
-  dplyr::select(plotid2010, eaid2010, hhid2010, zone_lsms, region_lsms, district_lsms, 
+dbP <- dbP %>% 
+  dplyr::select(hhid, EAID, ZONE, REGIONNAME, DISNAME, 
                 AEZ, fs,
                 SOC, SOC2, ph, ph2, RootDepth, 
                 rain_year, rain_wq, 
                 slope, elevation,
-                yld, lab = harv_lab, asset, pest, 
+                yld, lab = harv_lab, 
+                implmt_value, lvstk2_valu,
+                harv_lab, pest, 
                 N, P,
                 legume, irrig, 
                 SOC, SOC2, ph, ph2, RootDepth,
                 crop_count, surveyyear,
                 rural, area_gps,
-                lat, lon,
-                YW) 
+                lat, lon) %>%
+  do(filter(., complete.cases(.)))
 
 
-#######################################
-############## CLEANING2 ##############
-#######################################
-
-# remove plots which have more than 7 crops on them
-#NGA2012 <- NGA2012[!NGA2012$crop_count > 7,]
-
-# cap yield at 15872 kg/ha, the highest potential yield in NGA (not water limited)
-NGA2012 <- filter(NGA2012_raw, yld <= 15872.93341)
-
-# Sample includes very small plots <0.005 ha that bias result upwards and very large >35 ha. 
-NGA2012 <- filter(NGA2012, area_gps >=0.01 & area_gps <=10)
-
-# restrict attention to plots that use N < 400. There is one outlier of around 700 and some super large ones that are removed.
-NGA2012 <- filter(NGA2012, N < 1000)
-
-# Select relevant variables and complete cases
-NGA2012 <- NGA2012 %>% 
-  dplyr::select(plotid2012, eaid2012, hhid2012, zone_lsms, region_lsms, district_lsms, 
-                AEZ, fs, 
-                SOC, SOC2, ph, ph2, RootDepth, 
-                rain_year, rain_wq, 
-                slope, elevation,
-                yld, lab = harv_lab, asset, pest, 
-                N, P,
-                legume, irrig, 
-                SOC, SOC2, ph, ph2, RootDepth,
-                crop_count, surveyyear,
-                rural, area_gps,
-                lat, lon,
-                YW)
-
-#######################################
-############ BALANCE PANEL ############
-#######################################
-
-NGA2010 <- rename(NGA2010, plotid = plotid2010, hhid = hhid2010, eaid = eaid2010)
-NGA2012 <- rename(NGA2012, plotid = plotid2012, hhid = hhid2012, eaid = eaid2012)
-
-# Potential yield information that will be linked in later
-# Has many NA so need to be extracted.
-py <- rbind(NGA2010, NGA2012) %>%
-                    select(YW, hhid, eaid, lat, lon, plotid, surveyyear)
-
-NGA2010 <- NGA2010 %>%
-            select(-YW) %>%
-            do(filter(., complete.cases(.)))
-
-NGA2012 <- NGA2012 %>%
-            select(-YW) %>%
-            do(filter(., complete.cases(.)))
-
-NGA2010.2 <- NGA2010[NGA2010$hhid %in% NGA2012$hhid,] 
-NGA2012.2 <- NGA2012[NGA2012$hhid %in% NGA2010$hhid,] 
-
-# Balanced panel
-db0 <- rbind(NGA2010.2, NGA2012.2) 
-
-# Unbalanced panel
-db0 <- rbind(NGA2010, NGA2012)
-
-#rm(list=c("NGA2010", "NGA2012", "NGA2010.2", "NGA2012.2"))
 
 
 ######################################
 ######## Modify and add variables ####
 ######################################
 
+# per hectacre
+dbP <- dbP %>%  
+  mutate(
+    asset= (implmt_value + lvstk2_valu),
+    lab = (plant_lab + harv_lab),
+    yld=qty/area_gps,
+    N=N/area_gps,
+    P=P/area_gps,
+    lab=lab/area_gps, # Note that plant lab is missing in 2010
+    plant_lab = plant_lab/area_gps,
+    harv_lab = harv_lab/area_gps,
+    asset=asset/area_tot) %>%
+  dplyr::select(-qty)
+
+
 # Only select main four farming systems
 #summary(db0$fs)
 #db0 <- filter(db0, fs %in% c("Agro-pastoral", "Cereal-root crop mixed", "Humid lowland tree crop", "Root and tuber crop"))
 
-# CHECK Remove observations with 0 asset and 0 harv_lab
-db0 <- filter(db0, asset!= 0 & lab != 0)
-
 # Following Burke
-db0$phdum[db0$ph < 55] <- 1
-db0$phdum[db0$ph >= 55 & db0$ph <=70] <- 2 # Neutral and best suited for crops
-db0$phdum[db0$ph > 70] <- 3
-db0$phdum <- factor(db0$phdum)
+dbP$phdum[dbP$ph < 55] <- 1
+dbP$phdum[dbP$ph >= 55 & dbP$ph <=70] <- 2 # Neutral and best suited for crops
+dbP$phdum[dbP$ph > 70] <- 3
+dbP$phdum <- factor(dbP$phdum)
 
 
-db0$phdum2[db0$ph2 < 55] <- 1
-db0$phdum2[db0$ph2 >= 55 & db0$ph2 <=70] <- 2
-db0$phdum2[db0$ph2 > 70] <- 3
-db0$phdum2 <- factor(db0$phdum2)
-
-# Crop count > 1
-db0$crop_count2[db0$crop_count==1] <- 1
-db0$crop_count2[db0$crop_count>1] <- 0
+dbP$phdum2[dbP$ph2 < 55] <- 1
+dbP$phdum2[dbP$ph2 >= 55 & dbP$ph2 <=70] <- 2
+dbP$phdum2[dbP$ph2 > 70] <- 3
+dbP$phdum2 <- factor(dbP$phdum2)
 
 # Crop count > 1
-db0$crop_count2[db0$crop_count==1] <- 1
-db0$crop_count2[db0$crop_count>1] <- 0
+dbP$crop_count2[dbP$crop_count==1] <- 1
+dbP$crop_count2[dbP$crop_count>1] <- 0
+
+# -------------------------------------
+# Inflate 2011 prices to 2013 prices: assets
+# using inflation rate for 2011 and 2013. These years were selected as the main part of the survey takes place in these years.
+# from world bank:
+# http://data.worldbank.org/indicator/FP.CPI.TOTL.ZG/countries/TZ?display=graph
+# -------------------------------------
+
+inflation <- read.csv(file.path(paste0(dataPath,"Other/Inflation/inflation.csv")))
+rate2011 <- inflation$inflation[inflation$code=="TZ" & inflation$year==2011]/100
+rate2012 <- inflation$inflation[inflation$code=="TZ" & inflation$year==2012]/100
+
+inflate <- (1 + rate2011)*(1 + rate2012)
+
+db0 <- mutate(db0, asset = ifelse(surveyyear == 2010, asset*inflate, asset))
 
 # additional variables
 db0 <- db0 %>% mutate (logyld=log(yld),
                        yesN = ifelse(N>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        noN = ifelse(N<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        logN = log(pmax(N, noN)), # maximum of dummy and N following Battese (1997)
-                       yesP = ifelse(P>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
-                       noP = ifelse(P<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
-                       logP = log(pmax(P, noP)), # maximum of dummy and N following Battese (1997)
-                       logasset = log(asset),
+                       lab=lab/area,
+                       assetph=asset/area_tot,
+                       logasset = log(assetph),
                        loglab = log(lab),
                        logarea = log(area_gps),
-                       rain_wq_2 = rain_wq*rain_wq,
+                       rain_wq2 = rain_wq*rain_wq,
+                       rain_year2 = rain_year*rain_year,
+                       lograin = log(rain_year),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
 
 # Add CRE variables
 db0 <- ddply(db0, .(hhid), transform,
+             loglab_bar=mean(loglab, na.rm=TRUE),
+             logN_bar=mean(logN, na.rm=TRUE),
+             noN_bar=mean(noN, na.rm=TRUE),
+             area_bar=mean(area, na.rm=TRUE),
+             logarea_bar=mean(logarea, na.rm=TRUE),
+             manure_bar=mean(manure, na.rm=TRUE),
+             irrig_bar=mean(irrig, na.rm = TRUE),
+             legume_bar=mean(legume, na.rm = TRUE),
+             pest_bar=mean(pest, na.rm = TRUE),
+             hybrd_bar=mean(hybrd, na.rm = TRUE),
+             crop_count_bar=mean(crop_count2, na.rm=TRUE),
+             #maize_bar=mean(maize, na.rm=TRUE),
+             soilSandy_bar=mean(soilSandy, na.rm=TRUE),
+             soilLoam_bar=mean(soilLoam, na.rm=TRUE),
+             soilClay_bar=mean(soilClay, na.rm=TRUE),
+             soilOther_bar=mean(soilOther, na.rm=TRUE))
+
+
+# drop unused levels
+dbP <- droplevels(dbP)
+
+# CHECK Remove observations with 0 asset and 0 harv_lab
+dbP <- filter(dbP, asset!= 0 & lab != 0)
+
+# Add CRE variables
+dbP <- ddply(dbP, .(hhid), transform,
              loglab_bar=mean(loglab, na.rm=TRUE),
              logN_bar=mean(logN, na.rm=TRUE),
              noN_bar=mean(noN, na.rm=TRUE),
@@ -203,9 +242,9 @@ db0 <- ddply(db0, .(hhid), transform,
 #   mutate(surveyyear = as.numeric(as.character(surveyyear)))
 # 
 # # Merge with panel data
-# db1 <- left_join(db0, Prices)
+# db1 <- left_join(dbP, Prices)
 
-db1 <-db0
+db1 <-dbP
 
 # Drop unused levels
 db1<-droplevels(db1)
