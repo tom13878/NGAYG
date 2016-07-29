@@ -80,7 +80,9 @@ dbP <- dbP %>%
 # We choose rel_harv_area (yld3)
 
 dbP <- dbP %>% 
-  mutate(area = area_gps, 
+  mutate(
+          area = rel_harv_area, 
+          #area = area_gps,
          yld = crop_qty_harv/area,
          N = N/area)
 
@@ -92,7 +94,7 @@ dbP <- filter(dbP, yld <= 15872.93341)
 # As we focus on small scale farmers we restrict area size
 dbP <- filter(dbP, area_gps >=0.01 & area_gps <=10)
 
-# restrict attention to plots that use N < 400. There is one outlier of around 700 and some super large ones that are removed.
+# restrict attention to plots that use N < 700. 700kg/hectare  represents an upper bound limit associated with inorganic fertilizer use in the United States under irrigated corn conditions (Sheahan & Barett 2014) 
 dbP <- filter(dbP, N < 700)
 
 
@@ -105,16 +107,25 @@ dbP <- dbP %>%
                 SOC, SOC2, ph, ph2, RootDepth, 
                 rain_year, rain_wq, 
                 slope, elevation,
-                yld, harv_lab, 
+                yld, 
+                harv_lab, adults,
+                seed,
                 area, area_tot,
-                implmt_value, lvstk2_valu,
-                harv_lab, pest, 
-                N, P,
+                implmt_value, lvstk_valu, lvstk2_valu,
+                harv_lab, 
+                pest, herb,
+                N, 
+                mech, antrac,
                 legume, irrig, 
                 SOC, SOC2, ph, ph2, RootDepth,
                 crop_count, surveyyear,
                 rural, area_gps,
-                lat, lon) %>%
+                lat, lon)
+
+
+summary(dbP)
+
+db0 <- dbP %>%
   do(filter(., complete.cases(.)))
 
 
@@ -129,22 +140,22 @@ dbP <- dbP %>%
 #db0 <- filter(db0, fs %in% c("Agro-pastoral", "Cereal-root crop mixed", "Humid lowland tree crop", "Root and tuber crop"))
 
 # Following Burke
-dbP$phdum[dbP$ph < 55] <- 1
-dbP$phdum[dbP$ph >= 55 & dbP$ph <=70] <- 2 # Neutral and best suited for crops
-dbP$phdum[dbP$ph > 70] <- 3
-dbP$phdum <- factor(dbP$phdum)
+db0$phdum[db0$ph < 55] <- 1
+db0$phdum[db0$ph >= 55 & db0$ph <=70] <- 2 # Neutral and best suited for crops
+db0$phdum[db0$ph > 70] <- 3
+db0$phdum <- factor(db0$phdum)
 
-dbP$phdum2[dbP$ph2 < 55] <- 1
-dbP$phdum2[dbP$ph2 >= 55 & dbP$ph2 <=70] <- 2
-dbP$phdum2[dbP$ph2 > 70] <- 3
-dbP$phdum2 <- factor(dbP$phdum2)
+db0$phdum2[db0$ph2 < 55] <- 1
+db0$phdum2[db0$ph2 >= 55 & db0$ph2 <=70] <- 2
+db0$phdum2[db0$ph2 > 70] <- 3
+db0$phdum2 <- factor(db0$phdum2)
 
 # Crop count > 1
-dbP$crop_count2[dbP$crop_count==1] <- 1
-dbP$crop_count2[dbP$crop_count>1] <- 0
+db0$crop_count2[db0$crop_count==1] <- 1
+db0$crop_count2[db0$crop_count>1] <- 0
 
 # additional variables
-dbP <- dbP %>% mutate (logyld=log(yld),
+db0 <- db0 %>% mutate (logyld=log(yld),
                        yesN = ifelse(N>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        noN = ifelse(N<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        logN = log(pmax(N, noN)), # maximum of dummy and N following Battese (1997)
@@ -161,7 +172,7 @@ dbP <- dbP %>% mutate (logyld=log(yld),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
 
 # CHECK Remove observations with 0 asset and 0 harv_lab
-#dbP <- filter(dbP, asset!= 0 & lab != 0)
+#db0 <- filter(db0, asset!= 0 & lab != 0)
 
 # -------------------------------------
 # Inflate 2011 prices to 2013 prices: assets
@@ -175,11 +186,11 @@ rate2011 <- inflation$inflation[inflation$code=="NG" & inflation$year==2011]/100
 rate2012 <- inflation$inflation[inflation$code=="NG" & inflation$year==2012]/100
 
 inflate <- (1 + rate2011)*(1 + rate2012)
-dbP <- mutate(dbP, asset = ifelse(surveyyear == 2010, asset*inflate, asset))
+db0 <- mutate(db0, asset = ifelse(surveyyear == 2010, asset*inflate, asset))
 
 
 # Add CRE variables
-dbP <- dbP %>%
+db0 <- db0 %>%
       group_by(hhid) %>%
       mutate(loglab_bar=mean(loglab, na.rm=TRUE),
              logN_bar=mean(logN, na.rm=TRUE),
@@ -189,16 +200,12 @@ dbP <- dbP %>%
              irrig_bar=mean(irrig, na.rm = TRUE),
              legume_bar=mean(legume, na.rm = TRUE),
              pest_bar=mean(pest, na.rm = TRUE),
+             herb_bar=mean(herb, na.rm = TRUE),
              #hybrd_bar=mean(hybrd, na.rm = TRUE),
              crop_count_bar=mean(crop_count2, na.rm=TRUE))
             
-dbP$pest <-drop_labels(dbP$pest) 
-str(dbP)
-####CHECK HERB AND PEST WRONG CODES 2 and 1
-
-
 # drop unused levels
-dbP <- droplevels(dbP)
+db0 <- droplevels(db0)
 
 
 # # Profit maximizing yield analysis
@@ -211,14 +218,13 @@ dbP <- droplevels(dbP)
 #   mutate(surveyyear = as.numeric(as.character(surveyyear)))
 # 
 # # Merge with panel data
-# db1 <- left_join(dbP, Prices)
+# db1 <- left_join(db0, Prices)
 
-db1 <-dbP
 
 # Drop unused levels
-db1<-droplevels(db1)
+db0<-droplevels(db0)
 
-
+# nutrient availability definition: http://webarchive.iiasa.ac.at/Research/LUC/External-World-soil-database/HTML/SoilQuality.html?sb=10
 
 #######################################
 ############## ANALYSIS ###############
@@ -228,28 +234,34 @@ db1<-droplevels(db1)
 olsCD1 <- lm(logyld ~ noN + logN + logasset + loglab + 
                logarea +
                irrig +
+               mech + antrac + 
                slope + elevation +
                SOC2 + phdum2 + 
                rain_wq + rain_wq2+
-               AEZ + fs +
+               fs +
                crop_count2 + surveyyear2,
-             data = db1)
+             data = db0)
 
 
 olsCD2 <- lm(logyld ~ noN + logN + logasset + loglab + 
                logarea +
                irrig + 
+               herb + pest +
+               mech + antrac + 
                slope + elevation +
                SOC2 + phdum2 + 
                rain_wq + rain_wq2+
-               AEZ + fs +
-               crop_count2 + surveyyear2 + 
+               fs +
+               crop_count2 + 
+               surveyyear2 + 
                noN_bar + logN_bar + 
                loglab_bar + logarea_bar + 
-               irrig_bar + crop_count_bar,
-             data = db1)
+               irrig_bar + 
+               herb_bar + pest_bar +
+               crop_count_bar,
+             data = db0)
 
-stargazer(olsCD1, olsCD2, type="text")
+stargazer(olsCD1, olsCD2,olsCD2, type="text")
 
 # Assess skewness of OLS - should be left skewed which is confirmed.
 hist( residuals(olsCD1), 15)
@@ -258,103 +270,40 @@ library("moments")
 skewness(residuals(olsCD1))
 skewness(residuals(olsCD2))
 
-# library(purrr)
-# CD <- db0 %>%
-#       split(.$fs) %>%
-#       map(~ lm(logyld ~ noN, data =. ))
-# 
-# 
-# CD2 <- db0 %>%
-#   slice_rows("fs") %>%
-#   by_slice(partial(lm, logyld ~ noN))
-# 
-# CD <- db0 %>%
-#   group_by(fs) %>%
-#   do(fit = lm(logyld ~ noN, .))
-# 
-# CD %>% tidy(fit)
-# CD %>% glance(fit)
-# CD %>% augment(fit)
-
-# 
-# # By farming system
-# NB: droplevels is essential as otherwise sfa() does not work
-unique(db1$fs)
-
-ap <- filter(db1, fs == "Agro-pastoral") %>% droplevels()
-crcm <- filter(db1, fs == "Cereal-root crop mixed") %>% droplevels()
-hltc <- filter(db1, fs == "Humid lowland tree crop") %>% droplevels()
-rtc <- filter(db1, fs == "Root and tuber crop") %>% droplevels()
-
-# By AEZ
-twsa <- filter(db1, AEZ == "Tropic - warm / semiarid") %>% droplevels()
-twsh <- filter(db1, AEZ == "Tropic - warm / subhumid") %>% droplevels()
-tcsh <- filter(db1, AEZ == "Tropic - cool / subhumid") %>% droplevels()
-twh <- filter(db1, AEZ == "Tropic - warm / humid") %>% droplevels()
-# 
-cd_f <- function(df){
-  reg <- lm(logyld ~ noN + logN + logasset + loglab +
-              logarea +
-              irrig +
-              slope + elevation +
-              SOC2 + phdum2 +
-              rain_wq + rain_wq2+
-              crop_count2 + surveyyear2,
-            data = df)
-  return(reg)
-}
-
-cd_cre_f <- function(df){
-  reg <- lm(logyld ~ noN + logN + logasset + loglab +
-          logarea +
-          irrig +
-          slope + elevation +
-          SOC2 + phdum2 +
-          rain_wq + rain_wq2+
-          crop_count2 + surveyyear2 +
-          noN_bar + logN_bar + loglab_bar + logarea_bar +
-          irrig_bar + crop_count_bar,
-          data = df)
-  return(reg)
-}
-# 
-cd_ap <- cd_cre_f(ap)
-cd_crcm <- cd_cre_f(crcm)
-cd_hltc <- cd_cre_f(hltc)
-cd_rtc <- cd_cre_f(rtc)
-stargazer(cd_ap, cd_crcm, cd_hltc, cd_rtc, type = "text")
-
-cd_twsa <- cd_cre_f(twsa)
-cd_twsh <- cd_cre_f(twsh)
-cd_tcsh <- cd_cre_f(tcsh)
-cd_twh <- cd_cre_f(twh)
-stargazer(cd_twsa, cd_twsh, cd_tcsh, cd_twh, type = "text")
-
-
 
 # Frontier estimation
-sfaCD1 <- sfa(logyld ~ noN + logN + logasset + loglab +
-      logarea +
-      slope + elevation +
-      SOC2 +  phdum2 +
-        AEZ +
-      rain_wq + rain_wq2+
-      crop_count2 + surveyyear2,
-    data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+sfaCD1 <- sfa(logyld ~ noN + logN + logasset + loglab + 
+                logarea +
+                irrig +
+                AEZ + fs +
+                mech + antrac + 
+                slope + elevation +
+                SOC2 + phdum2 + 
+                rain_wq + rain_wq2+
+                fs +
+                crop_count2 + surveyyear2,
+                data = db0, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 
 summary(sfaCD1, extraPar = TRUE)
 lrtest(sfaCD1)
 
-sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab +
+sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab + 
                 logarea +
+                irrig + 
+                AEZ +
+                herb + pest +
+                mech + antrac + 
                 slope + elevation +
-                SOC2 + phdum2 +
-                #AEZ +
-                rain_wq + rain_wq2 +
-                crop_count2 + surveyyear2 + 
-                noN_bar + logN_bar + loglab_bar + logarea_bar + 
+                SOC2 + phdum2 + 
+                rain_wq + rain_wq2+
+                crop_count2 + 
+                surveyyear2 + 
+                noN_bar + logN_bar + 
+                loglab_bar + logarea_bar + 
+                irrig_bar + 
+                herb_bar + pest_bar +
                 crop_count_bar,
-              data = dbP, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+                data = db0, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 
 summary(sfaCD2, extraPar = TRUE)
 lrtest(sfaCD2)
