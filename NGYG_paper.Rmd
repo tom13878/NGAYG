@@ -1,31 +1,29 @@
 ---
-output: 
-  pdf_document:
-    keep_tex: true
-    fig_caption: true
-    number_sections: true
-    latex_engine: pdflatex
-    template: D:\\Dropbox\\Michiel_research\\Templates\\r-markdown-templates\\svm-latex-ms.tex
 title: "Assessing maize yield gaps in Nigeria"
-subtitle: "Check"
-thanks: "**Current version**: `r format(Sys.time(), '%B %d, %Y')`; **Corresponding author**: michiel.vandijk@wur.nl."
 author:
-- name: Michiel van Dijk
-  affiliation: Wageningen Economic Research & IIASA
-- name: Zuzana Smeets Kristkova
-  affiliation: Wageningen Economic Research
-- name: Tom Morley
-  affiliation: Wageningen Economic Research
-  
-abstract: "NGA MAize yield gaps abstract"
-keywords: "Yield Gap"
+- affiliation: Wageningen Economic Research & IIASA
+  name: Michiel van Dijk
+- affiliation: Wageningen Economic Research
+  name: Zuzana Smeets Kristkova
+- affiliation: Wageningen Economic Research
+  name: Tom Morley
 date: "`r format(Sys.time(), '%B %d, %Y')`"
-geometry: margin=1in
-#fontfamily: mathpazo
+output:
+  pdf_document:
+    fig_caption: yes
+    keep_tex: yes
+    latex_engine: pdflatex
+    number_sections: yes
+    template: D:\\Dropbox\\Michiel_research\\Templates\\r-markdown-templates\\svm-latex-ms.tex
+  html_document: default
+  word_document: default
 fontsize: 11pt
-# spacing: double
+geometry: margin=1in
+keywords: Yield Gap
 bibliography: M:/My Documents/bibTex/library.bib
-
+subtitle: Check
+thanks: "**Current version**: `r format(Sys.time(), '%B %d, %Y')`; **Corresponding author**: michiel.vandijk@wur.nl."
+abstract: NGA MAize yield gaps abstract
 ---
 
 
