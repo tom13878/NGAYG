@@ -89,6 +89,7 @@ dbP <- dbP %>%
 
 # cap yield at 15872 kg/ha, the highest potential yield in NGA (not water limited)
 dbP <- filter(dbP, yld <= 15872.93341)
+#dbP <- filter(dbP, yld <= 10000)
 
 # Sample includes very small plots <0.005 ha that bias result upwards and very large >35 ha. 
 # As we focus on small scale farmers we restrict area size
@@ -101,32 +102,42 @@ dbP <- filter(dbP, N < 700)
 
 
 # Select relevant variables and complete cases
-dbP <- dbP %>% 
+db0 <- dbP %>% 
   dplyr::select(hhid, EAID, ZONE, REGIONNAME, DISNAME, 
                 AEZ, fs,
                 SOC, SOC2, ph, ph2, RootDepth, 
                 rain_year, rain_wq, 
                 slope, elevation,
                 yld, 
-                harv_lab, adults,
+                harv_lab, harv_lab_hire ,
+                adults,
                 seed,
-                area, area_tot,
+                area, area_tot, area_gps,
                 implmt_value, lvstk_valu, lvstk2_valu,
-                harv_lab, 
                 pest, herb,
                 N, 
                 mech, antrac,
-                legume, irrig, 
-                SOC, SOC2, ph, ph2, RootDepth,
+                legume, irrig, inter_crop,
+                sex, age, 
+                #educ,
+                dist_hh, dist_road, dist_market, dist_popcenter,
+                plot_right,
+                ext_dummy_pp, ext_dummy_ph,
+                mobile_access_ph, 
+                #phones_owned_ph, internet_access_ph, internet_athome_ph, internet_4marketinfo_ph, internet_4banking_ph,
+                bank_account_own_pp, bank_account_others4use_pp, borrow_dummy_pp, coop_sav_pp,
+                ext_topic_agro_ph, ext_topic_econ_ph, ext_topic_other_ph,
+                infra_dummy_finance_ph, infra_dummy_market_ph,
+                #com_type_agricoop_ph, com_type_creditcoop_ph,
                 crop_count, surveyyear,
-                rural, area_gps,
+                rural, 
                 lat, lon)
 
 
-summary(dbP)
+summary(db0)
 
-db0 <- dbP %>%
-  do(filter(., complete.cases(.)))
+#db0 <- db0 %>%
+#  do(filter(., complete.cases(.)))
 
 
 
@@ -160,6 +171,7 @@ db0 <- db0 %>% mutate (logyld=log(yld),
                        noN = ifelse(N<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        logN = log(pmax(N, noN)), # maximum of dummy and N following Battese (1997)
                        lab = harv_lab,
+                       hirelab_sh = harv_lab_hire/(harv_lab_hire + harv_lab)*100,
                        lab=lab/area,
                        asset = implmt_value + lvstk2_valu,
                        assetph=asset/area_tot,
@@ -168,7 +180,10 @@ db0 <- db0 %>% mutate (logyld=log(yld),
                        logarea = log(area_gps), # area_gps not area because we want to add plot size as proxy for economies of scale
                        rain_wq2 = rain_wq*rain_wq,
                        rain_year2 = rain_year*rain_year,
+                       pestherb = ifelse(herb==1 | pest==1, 1, 0),
+                       ext = ifelse(ext_dummy_pp==1 | ext_dummy_ph ==1, 1, 0),
                        lograin = log(rain_year),
+                       sex = as.numeric(ifelse(sex == "MALE", 0, 1)),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
 
 # CHECK Remove observations with 0 asset and 0 harv_lab
@@ -201,7 +216,12 @@ db0 <- db0 %>%
              legume_bar=mean(legume, na.rm = TRUE),
              pest_bar=mean(pest, na.rm = TRUE),
              herb_bar=mean(herb, na.rm = TRUE),
-             #hybrd_bar=mean(hybrd, na.rm = TRUE),
+             pestherb_bar=mean(pestherb, na.rm = TRUE),
+             seed_bar=mean(seed, na.rm = TRUE),
+             mech_bar=mean(mech, na.rm = TRUE),
+             antrac_bar=mean(antrac, na.rm = TRUE),
+             inter_crop_bar=mean(inter_crop, na.rm = TRUE),
+             ext_bar=mean(ext, na.rm = TRUE),
              crop_count_bar=mean(crop_count2, na.rm=TRUE))
             
 # drop unused levels
@@ -235,33 +255,42 @@ olsCD1 <- lm(logyld ~ noN + logN + logasset + loglab +
                logarea +
                irrig +
                mech + antrac + 
+               inter_crop +
                slope + elevation +
                SOC2 + phdum2 + 
                rain_wq + rain_wq2+
-               fs +
+               AEZ +
                crop_count2 + surveyyear2,
              data = db0)
 
 
 olsCD2 <- lm(logyld ~ noN + logN + logasset + loglab + 
                logarea +
-               irrig + 
-               herb + pest +
-               mech + antrac + 
+               #irrig + 
+               AEZ +
+               #herb + pest +
+               pestherb +
+               #mech + 
+               #antrac +
+               #seed +
+               #inter_crop +
                slope + elevation +
                SOC2 + phdum2 + 
                rain_wq + rain_wq2+
-               fs +
                crop_count2 + 
                surveyyear2 + 
                noN_bar + logN_bar + 
                loglab_bar + logarea_bar + 
-               irrig_bar + 
-               herb_bar + pest_bar +
+               #irrig_bar + 
+               #herb_bar + pest_bar +
+               pestherb_bar +
+               #mech_bar + antrac_bar +
+               #seed_bar +
+               #inter_crop_bar +
                crop_count_bar,
              data = db0)
 
-stargazer(olsCD1, olsCD2,olsCD2, type="text")
+stargazer(olsCD1, olsCD2, type="text")
 
 # Assess skewness of OLS - should be left skewed which is confirmed.
 hist( residuals(olsCD1), 15)
@@ -275,12 +304,12 @@ skewness(residuals(olsCD2))
 sfaCD1 <- sfa(logyld ~ noN + logN + logasset + loglab + 
                 logarea +
                 irrig +
-                AEZ + fs +
+                pestherb +
+                AEZ +
                 mech + antrac + 
                 slope + elevation +
                 SOC2 + phdum2 + 
                 rain_wq + rain_wq2+
-                fs +
                 crop_count2 + surveyyear2,
                 data = db0, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 
@@ -291,8 +320,40 @@ sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab +
                 logarea +
                 irrig + 
                 AEZ +
-                herb + pest +
-                mech + antrac + 
+                pestherb +
+                #herb + pest +
+                #mech + antrac +
+                #seed +
+                #inter_crop +
+                slope + elevation +
+                SOC2 + phdum2 + 
+                rain_wq + rain_wq2+
+                crop_count2 + surveyyear2 + 
+                noN_bar + logN_bar + 
+                loglab_bar + logarea_bar + 
+                irrig_bar + 
+                pestherb_bar +
+                #herb_bar + pest_bar +
+                #mech_bar + antrac_bar +
+                #seed_bar +
+                #inter_crop_bar +
+                crop_count_bar,
+                data = db0, maxit = 1500, restartMax = 20, tol = 0.000001)
+
+summary(sfaCD2, extraPar = TRUE)
+lrtest(sfaCD2)
+
+sfaCD3 <- sfa(logyld ~ noN + logN + 
+                logasset + 
+                loglab + 
+                logarea +
+                #irrig + 
+                AEZ +
+                pestherb +
+                #herb + pest +
+                mech + antrac +
+                #seed +
+                #inter_crop +
                 slope + elevation +
                 SOC2 + phdum2 + 
                 rain_wq + rain_wq2+
@@ -300,15 +361,87 @@ sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab +
                 surveyyear2 + 
                 noN_bar + logN_bar + 
                 loglab_bar + logarea_bar + 
-                irrig_bar + 
-                herb_bar + pest_bar +
-                crop_count_bar,
-                data = db0, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+                #irrig_bar +
+                pestherb_bar +
+                #herb_bar + pest_bar +
+                mech_bar + antrac_bar +
+                #seed_bar +
+                #inter_crop_bar +
+                crop_count_bar
+              | age + sex +
+                hirelab_sh +
+                infra_dummy_finance_ph +
+                infra_dummy_market_ph + 
+                plot_right + 
+                borrow_dummy_pp +
+                #ext_topic_agro_ph + ext_topic_econ_ph + ext_topic_other_ph +
+                ext +
+                #ext_dummy_ph + 
+                #mobile_access_ph +
+                #dist_hh +
+                dist_market-1 + 
+                #dist_popcenter +
+                #fs +
+                -1,
+                data = db0, maxit = 1500, restartMax = 20, tol = 0.000001)
 
-summary(sfaCD2, extraPar = TRUE)
-lrtest(sfaCD2)
+summary(sfaCD3, extraPar = TRUE)
+lrtest(sfaCD3)
 
 
+
+sfaCD4 <- sfa(logyld ~ noN + logN + 
+                logasset + 
+                loglab + 
+                logarea +
+                #irrig + 
+                AEZ +
+                pestherb +
+                #herb + pest +
+                mech + antrac +
+                #seed +
+                #inter_crop +
+                slope + elevation +
+                SOC2 + phdum2 + 
+                rain_wq + rain_wq2+
+                crop_count2 + 
+                surveyyear2 + 
+                noN_bar + logN_bar + 
+                loglab_bar + logarea_bar + 
+                #irrig_bar +
+                pestherb_bar +
+                #herb_bar + pest_bar +
+                mech_bar + antrac_bar +
+                #seed_bar +
+                #inter_crop_bar +
+                crop_count_bar
+              | age + sex +
+                hirelab_sh +
+                infra_dummy_finance_ph +
+                infra_dummy_market_ph + 
+                plot_right + 
+                borrow_dummy_pp +
+                #ext_topic_agro_ph + ext_topic_econ_ph + ext_topic_other_ph +
+                #ext +
+                #ext_dummy_ph + 
+                #mobile_access_ph +
+                #dist_hh +
+                dist_market-1 + 
+                #dist_popcenter +
+                #fs +
+                -1,
+              data = db0, maxit = 1500, restartMax = 20, tol = 0.000001)
+
+summary(sfaCD4, extraPar = TRUE)
+
+
+
+
+
+mobile_access_ph, 
+bank_account_own_pp, borrow_dummy_pp, coop_sav_pp,
+infra_dummy_finance_ph, infra_dummy_market_ph,
+com_type_agricoop_ph, com_type_creditcoop_ph,
 
 # Compute profit maximizing Pn per zone and other summary statistics
 # Select model
