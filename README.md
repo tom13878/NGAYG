@@ -1,3 +1,3 @@
 # NGAYG
-# NGA yield gap analysis Read me file
+Code to assess maize yield gaps in Nigeria using LSMS-ISA surveys.
 
