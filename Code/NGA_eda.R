@@ -48,6 +48,16 @@ sjp.frq(db0$loglab,
         normal.curve = TRUE, 
         normal.curve.alpha = .3)
         
+sjp.frq(db0$logae, 
+        type = "dens", 
+        normal.curve = TRUE, 
+        normal.curve.alpha = .3)
+
+sjp.frq(db0$hirelab_sh, 
+        type = "dens", 
+        normal.curve = TRUE, 
+        normal.curve.alpha = .3)
+Freq(db0$hirelab_sh)
 
 # Fertilizer
 sjp.frq(db0$logN, 
@@ -55,12 +65,17 @@ sjp.frq(db0$logN,
         normal.curve = TRUE, 
         normal.curve.alpha = .3)
 
-# Labour
-sjp.frq(db0$hirelab_sh, 
+# Seed
+sjp.frq(db0$seed_q, 
         type = "dens", 
         normal.curve = TRUE, 
         normal.curve.alpha = .3)
-Freq(db0$hirelab_sh)
+Freq(db0$seed_q)
+sjp.frq(db0$logseed_q, 
+        type = "dens", 
+        normal.curve = TRUE, 
+        normal.curve.alpha = .3)
+
 
 # Infrastructure
 Freq(db0$infra_dummy_finance_ph)
@@ -74,6 +89,8 @@ names(dbP)
 
 # Scatter point and smoothed line
 ggplot(data = db0, aes(x = N, y = yld)) + geom_point() + geom_smooth()
+ggplot(data = db0, aes(x = logN, y = logyld)) + geom_point() + geom_smooth()
+ggplot(data = filter(db0, surveyyear == 2012), aes(x = seed_q, y = yld)) + geom_point() + geom_smooth()
 
 
 

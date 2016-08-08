@@ -110,8 +110,8 @@ db0 <- dbP %>%
                 slope, elevation,
                 yld, 
                 harv_lab, harv_lab_hire ,
-                adults,
-                seed,
+                ae,
+                seed, seed_q,
                 area, area_tot, area_gps,
                 implmt_value, lvstk_valu, lvstk2_valu,
                 pest, herb,
@@ -120,7 +120,7 @@ db0 <- dbP %>%
                 legume, irrig, inter_crop,
                 sex, age, 
                 #educ,
-                dist_hh, dist_road, dist_market, dist_popcenter,
+                dist_hh, dist_road, dist_market, dist_popcenter, dist_regcap,
                 plot_right,
                 ext_dummy_pp, ext_dummy_ph,
                 mobile_access_ph, 
@@ -170,9 +170,10 @@ db0 <- db0 %>% mutate (logyld=log(yld),
                        yesN = ifelse(N>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        noN = ifelse(N<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        logN = log(pmax(N, noN)), # maximum of dummy and N following Battese (1997)
-                       lab = harv_lab,
+                       lab = harv_lab + harv_lab_hire,
                        hirelab_sh = harv_lab_hire/(harv_lab_hire + harv_lab)*100,
                        lab=lab/area,
+                       logae = log(ae),
                        asset = implmt_value + lvstk2_valu,
                        assetph=asset/area_tot,
                        logasset = log(assetph+1),
@@ -182,6 +183,8 @@ db0 <- db0 %>% mutate (logyld=log(yld),
                        rain_year2 = rain_year*rain_year,
                        pestherb = ifelse(herb==1 | pest==1, 1, 0),
                        ext = ifelse(ext_dummy_pp==1 | ext_dummy_ph ==1, 1, 0),
+                       seed_q = seed_q/area,
+                       logseed_q = log(seed_q),
                        lograin = log(rain_year),
                        sex = as.numeric(ifelse(sex == "MALE", 0, 1)),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
@@ -208,6 +211,7 @@ db0 <- mutate(db0, asset = ifelse(surveyyear == 2010, asset*inflate, asset))
 db0 <- db0 %>%
       group_by(hhid) %>%
       mutate(loglab_bar=mean(loglab, na.rm=TRUE),
+             logae_bar=mean(loglab, na.rm=TRUE),
              logN_bar=mean(logN, na.rm=TRUE),
              noN_bar=mean(noN, na.rm=TRUE),
              area_bar=mean(area, na.rm=TRUE),
@@ -218,6 +222,7 @@ db0 <- db0 %>%
              herb_bar=mean(herb, na.rm = TRUE),
              pestherb_bar=mean(pestherb, na.rm = TRUE),
              seed_bar=mean(seed, na.rm = TRUE),
+             logseed_q_bar=mean(logseed_q, na.rm=TRUE),
              mech_bar=mean(mech, na.rm = TRUE),
              antrac_bar=mean(antrac, na.rm = TRUE),
              inter_crop_bar=mean(inter_crop, na.rm = TRUE),
@@ -251,7 +256,8 @@ db0<-droplevels(db0)
 #######################################
 
 # Cobb Douglas
-olsCD1 <- lm(logyld ~ noN + logN + logasset + loglab + 
+olsCD1 <- lm(logyld ~ noN + logN + logasset + logae + 
+               logseed_q +
                logarea +
                irrig +
                mech + antrac + 
@@ -264,7 +270,8 @@ olsCD1 <- lm(logyld ~ noN + logN + logasset + loglab +
              data = db0)
 
 
-olsCD2 <- lm(logyld ~ noN + logN + logasset + loglab + 
+olsCD2 <- lm(logyld ~ noN + logN + logasset + logae + 
+               logseed_q +
                logarea +
                #irrig + 
                AEZ +
@@ -280,7 +287,8 @@ olsCD2 <- lm(logyld ~ noN + logN + logasset + loglab +
                crop_count2 + 
                surveyyear2 + 
                noN_bar + logN_bar + 
-               loglab_bar + logarea_bar + 
+               logae_bar + logarea_bar + 
+               logseed_q_bar +
                #irrig_bar + 
                #herb_bar + pest_bar +
                pestherb_bar +
@@ -301,7 +309,8 @@ skewness(residuals(olsCD2))
 
 
 # Frontier estimation
-sfaCD1 <- sfa(logyld ~ noN + logN + logasset + loglab + 
+sfaCD1 <- sfa(logyld ~ noN + logN + logasset + logae + 
+                logseed_q +
                 logarea +
                 irrig +
                 pestherb +
@@ -316,13 +325,16 @@ sfaCD1 <- sfa(logyld ~ noN + logN + logasset + loglab +
 summary(sfaCD1, extraPar = TRUE)
 lrtest(sfaCD1)
 
-sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab + 
+sfaCD2 <- sfa(logyld ~ noN + logN + 
+                logasset + 
+                logae + 
+                logseed_q +
                 logarea +
                 irrig + 
                 AEZ +
                 pestherb +
                 #herb + pest +
-                #mech + antrac +
+                mech + antrac +
                 #seed +
                 #inter_crop +
                 slope + elevation +
@@ -330,11 +342,14 @@ sfaCD2 <- sfa(logyld ~ noN + logN + logasset + loglab +
                 rain_wq + rain_wq2+
                 crop_count2 + surveyyear2 + 
                 noN_bar + logN_bar + 
-                loglab_bar + logarea_bar + 
+                logasset_bar +
+                logae_bar + 
+                logarea_bar + 
+                logseed_q_bar +
                 irrig_bar + 
                 pestherb_bar +
                 #herb_bar + pest_bar +
-                #mech_bar + antrac_bar +
+                mech_bar + antrac_bar +
                 #seed_bar +
                 #inter_crop_bar +
                 crop_count_bar,
@@ -345,28 +360,31 @@ lrtest(sfaCD2)
 
 sfaCD3 <- sfa(logyld ~ noN + logN + 
                 logasset + 
-                loglab + 
+                logae + 
+                logseed_q +
                 logarea +
-                #irrig + 
+                irrig + 
                 AEZ +
-                pestherb +
-                #herb + pest +
+                #pestherb +
+                herb + pest +
                 mech + antrac +
-                #seed +
-                #inter_crop +
+                seed +
+                inter_crop +
                 slope + elevation +
                 SOC2 + phdum2 + 
                 rain_wq + rain_wq2+
                 crop_count2 + 
                 surveyyear2 + 
                 noN_bar + logN_bar + 
-                loglab_bar + logarea_bar + 
-                #irrig_bar +
-                pestherb_bar +
-                #herb_bar + pest_bar +
+                logasset_bar +
+                logae_bar + logarea_bar + 
+                logseed_q_bar +
+                irrig_bar +
+                #pestherb_bar +
+                herb_bar + pest_bar +
                 mech_bar + antrac_bar +
-                #seed_bar +
-                #inter_crop_bar +
+                seed_bar +
+                inter_crop_bar +
                 crop_count_bar
               | age + sex +
                 hirelab_sh +
