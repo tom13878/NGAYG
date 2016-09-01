@@ -1,0 +1,31 @@
+---
+title: "Yield gap definitions"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Main aim
+To review definitions of existing yield gap measures and definitions, distinguish between economic and agronomic approaches of yield gap measurement, to provide and empirical example using a large nationally representative survey
+
+# starting points
+Definitions of yield gap 
+- Actual yield
+
+
+# Important papers
+- Lobell (2013) uses satelletite data and uses as benchmarck maximum in sample
+- Giller does the same and calls it attainable yield
+- Joao's definition of resource yield gap
+- Martin's papers on water-limited yield gap
+
+# Conceptual Framework
+- Yield gap framework
+
+# Application
+- calculate different yield gaps, also attainable yield gap and show differences
+- Reflect on 20% rule
+
+
