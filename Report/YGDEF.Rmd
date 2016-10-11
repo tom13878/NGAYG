@@ -7,25 +7,70 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Main aim
-To review definitions of existing yield gap measures and definitions, distinguish between economic and agronomic approaches of yield gap measurement, to provide and empirical example using a large nationally representative survey
+# Introduction
+Yield gap is a powerful concept to illustrate by how much crop yield can be increased.  and has therefore been used by both policy makers.  Despite its abundant use, various definitions are used to measure the yield gap which are not always comparable [@Sumberg]. 
 
-# starting points
-Definitions of yield gap 
-- Actual yield
+In a recent paper, Fischer [@Fischer] reviewed the various definitions of yield levels and yield gaps. This work expands the work of Fisher and builds on Van Dijk et al. [@Van Dijk] and Silva et al. [@Silva] by contrasting agricultural definitions of crop yield and yield gap with comparable but conceptually different measures used in the economic literature. Moreover, using a large nationally representative farm level survey on maize production in Nigeria, it provides and empirical study and comparison of the different yield levels and yield gaps, something which was missing in the theoretical paper of Fischer. It also illustrates the large impact of the impact of using diferent definitions of the two main components of yield: production and area, which is not explictely discussed by most yield gap studies.  
+
+The structure of the paper is as follows. Section 2 provides a conceptual framework that integrates varies definitions of yield levels and yield gap. Section 3 briefly discusses the Nigerian farm level maize data set that is used to illustrate the conceptual model. Section 4 computes the yield levels and yield gaps followed by a discussion in Section 5. Finally, Section 6 concludes. 
+
+# Literature review
+## Definitions of yield levels
+### Actual yield
+### Attainable yield
+### Economic yield
+### Water limited yield
+### potential yield
+
+## Definitions of yield levels
+
+## Measurement issues
+
+Any yield level is defined as 
+
+[FORMULA]
+
+where x is crop production in tons (e.g. actual, economic or potential) and y is field size in ha. Several papers reviewed the measurment of actual yield and the impact of using different defintions [ADD].Crop production can be measured in three ways: (1)
+
+Area can be measured in two ways. (1) Total plot size. (2) Harvested area. 
+
+Althoughm most yield gap studies provide a definition of yield gap, there is hardly any discussion on the defintions of production and area. Production is... while the definition of area seems mostly to depend on the availabilyt of data. Global yield gap studies such as [@Fisher], [@Licker], [@Mueller] and [@Vanittersum] rely on FAOSTAT or national statistics data as input, which use the harvested area definition. Local scale studies mostly use small project-specific survey data that use the total plot size definition [@ADD]. data for  scale The GYGA uses data [Examples] [XXX] and As will be shown below, using field size or harvested area has a dramatic impact on yield and yield gap. 
+
+
+
+
+at the beginning Although most yield gap papers provide a clear definition of the yield gap concept used 
+- Measurement of yield: harvested area or plot size, measurement of production
+- Confusion about attainable yield and economic yield 
+
+
+# Conceptual framework
+Combines agronomic literature on yield gap estimation and yield response functions with economic literature on technical efficiency and allocative efficiency with yield response function.
 
 
 # Important papers
-- Lobell (2013) uses satelletite data and uses as benchmarck maximum in sample
+- Lobell (2013) uses satelletite data and uses as benchmark maximum in sample
 - Giller does the same and calls it attainable yield
 - Joao's definition of resource yield gap
 - Martin's papers on water-limited yield gap
+- Fischer on definition of yield gaps
+- Agronomic vs economic analyisis: copy of book that compares functional forms.
+Reynolds et al. (2015) How Common Crop Yield Measures Misrepresent Productivity among Smallholder Farmers, ICAE.
+Fermont and Benson (2011) Estimating Yield of Food Crops Grown by Smallholder Farmers: A Review in the Uganda Context, IFPRI Discussion Paper 01097
 
-# Conceptual Framework
-- Yield gap framework
+# Methods
+## Data
 
-# Application
+
+## Estimation
+
+
+
+# Maize yield levels and yield gaps in Nigeria
 - calculate different yield gaps, also attainable yield gap and show differences
 - Reflect on 20% rule
 
+# Discussion
 
+
+# Conclusions
