@@ -10,7 +10,6 @@
 source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2010.r")
 source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2012.r")
 
-
 #######################################
 ############## PACKAGES ETC ###########
 #######################################
