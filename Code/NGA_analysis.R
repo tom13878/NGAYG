@@ -1,55 +1,33 @@
 #######################################
 #### CLEAN DATA PREPARE NGA PANEL #####
 #######################################
-
-
-############################################
-############## READ THE DATA ###############
-############################################
-
-source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2010.r")
-source("N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/Code\\NGA\\NGA_2012.r")
-
 #######################################
 ############## PACKAGES ETC ###########
 #######################################
-detach(package:dplyr)
-library(plyr)
-library(dplyr)
+
+library(tidyverse)
 library(stargazer)
 library(broom)
 library(DescTools)
-library(ggplot2)
 library(xtable)
 library(frontier)
 library(moments)
-library(tidyr)
-library(openxlsx)
+library(readxl)
+library(frontier)
+library(AER)
 
-dataPath <- "N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/"
-wdPath <- "D:\\Dropbox\\Michiel_research\\2285000066 Africa Maize Yield Gap"
+wdPath <- "D:\\Data\\Projects\\NGAYG"
 setwd(wdPath)
 
+source("Code/winsor.r")
 options(scipen=999)
 
-
 #######################################
-###### POOLED DATABASE ################
+############## LOAD DATA ##############
 #######################################
 
-# get all name variables that are common to the three waves
-good <- Reduce(intersect, list(names(NGA2010), names(NGA2012)))
-
-# select only those names common in both waves
-NGA2010_2 <- NGA2010[, good]
-NGA2012_2 <- NGA2012[, good]
-
-# new full dataset
-dbP <- rbind(NGA2010_2, NGA2012_2)
-
-# Remove labels and factors as otherwise there is an error caused by haven
-#dbP[] <- lapply(dbP, unclass)
-
+# Load pooled data
+dbP <- readRDS("Cache/Pooled_NGA.rds")
 
 #######################################
 ############## CLEANING ###############

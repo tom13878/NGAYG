@@ -23,7 +23,7 @@ options(scipen=999)
 # There is a fix but probably not yet in CRAN version
 # https://github.com/hadley/haven/issues/86
 loc <-  read_dta(file.path(dataPath, "Post Harvest Wave 2/Agriculture/secta1_harvestw2.dta")) %>%
-  transmute(ZONE = toupper(as_factor(zone)), REGIONNAME = toupper(as_factor(state)), REGIONCODE = state, 
+  transmute(ZONE = toupper(as_factor(zone)), REGNAME = toupper(as_factor(state)), REGIONCODE = state, 
             DISCODE = lga, lga, hhid, plotid, rural = sector) %>%
   mutate(rural = ifelse(rural == 2, 1, 0)) 
 
@@ -46,14 +46,14 @@ rm(link, count, lga, name_lga)
 oput <- read_dta(file.path(dataPath, "Post Harvest Wave 2/Agriculture/secta3_harvestw2.dta")) %>%
     dplyr::transmute(hhid, plotid, ZONE = toupper(as_factor(zone)), crop=as.numeric(cropcode), crop_qty_harv=sa3q6a1, qty_unit=sa3q6a2,
                      harv_area = sa3q5a, harv_area_unit = toupper(as_factor(sa3q5b)), 
-                     main_buyer=sa3q10, qty_sold=sa3q11a, qty_sold_unit=sa3q11b, qty_sold_naira=sa3q12)
+                     main_buyer=sa3q10, crop_qty_sold=sa3q11a, qty_sold_unit=sa3q11b, qty_sold_naira=sa3q12)
 
 
 oput$qty_unit <- as.integer(oput$qty_unit)
 oput$qty_sold_unit <- as.integer(oput$qty_sold_unit)
 
 # Convert area_harv into ha using conversion factors presented in survey
-conv_area <- read.csv(file.path(paste0(dataPath,"/../.."), "Other/plot_size/area_conv_NGA.csv")) %>%
+conv_area <- read.csv(file.path(paste0(dataPath,"/../.."), "Other/Conversion/NGA/area_conv_NGA.csv")) %>%
   select(-code, -ZONECODE) %>%
   mutate(unit = toupper(unit))
 
@@ -91,13 +91,19 @@ oput_maize <- oput[oput$crop %in% c(1080, 1081, 1082, 1083) & !is.na(oput$crop_q
 # Conversion is only for maize (products), not for other crops.
 cnvrt <- read.csv(file.path(paste0(dataPath,"/../.."), "Other/Conversion/NGA/cropconversion2012.csv")) 
 
+# Convert qty_harv and qty_sold
 oput_maize$qty_unit <- as.integer(oput_maize$qty_unit)
-oput_maize <- left_join(oput_maize, cnvrt)
-oput_maize <- dplyr::mutate(oput_maize, qty_kg = crop_qty_harv*weight)
+oput_maize$qty_unit <- as.integer(oput_maize$qty_sold_unit)
+oput_maize <- left_join(oput_maize, cnvrt) %>%
+  mutate(qty_kg = crop_qty_harv*weight) %>%
+  select(-weight, -unit)
+oput_maize <- left_join(oput_maize, cnvrt, by =c("qty_sold_unit" = "qty_unit")) %>%
+  mutate(qty_sold_kg = crop_qty_sold*weight,
+         crop_price = qty_sold_naira/qty_sold_kg) %>%
+  select(-weight, -unit)
 
-oput_maize <- dplyr::select(oput_maize, hhid, plotid, crop_qty_harv, harv_area, crop_count, legume)
+oput_maize <- dplyr::select(oput_maize, hhid, plotid, crop_qty_harv, crop_qty_sold, crop_price, harv_area, crop_count, legume)
 oput_maize$hhid <- as.integer(oput_maize$hhid)
-
 
 rm(list=c("cnvrt", "legumes", "oput"))
 
@@ -199,6 +205,7 @@ fert <- group_by(fert, hhid, plotid) %>%
   summarise(N=sum(Qn, na.rm=TRUE),
             P=sum(Qp, na.rm=TRUE),
             WPn=sum((Qn/N)*Pn, na.rm=TRUE))
+fert$WPn[fert$WPn == 0] <- NA # Set WPn to NA in case of no N use.
 
 # now add back in the left over or free fert which does not have a price
 
@@ -217,10 +224,9 @@ otherFert <- group_by(otherFert, hhid, plotid) %>%
 
 fert <- left_join(fert, otherFert)
 fert <- mutate(fert,
-              N=N+NO,
-              P=P+PO,
-               WPn) %>%
-    dplyr::select(hhid, plotid, N, P, WPn)
+               N = rowSums(cbind(N, NO), na.rm = TRUE),
+               P = rowSums(cbind(N, PO), na.rm = TRUE)) %>%
+  dplyr::select(hhid, plotid, N, P, WPn)
 
 # and join with other chemical variables
 chem <- left_join(chem, fert)
@@ -896,7 +902,7 @@ credit_ph = creditsum2_ph %>%
   setNames(paste0(names(.), "_ph"))
 names(credit_ph)[names(credit_ph)=="hhid_ph"]<-"hhid"
 
-rm(list=c("credit2_ph", "creditsum2_ph"))
+rm(list=c("credit2_ph", "creditsum2_ph"), findNA)
 
 
 ######################
