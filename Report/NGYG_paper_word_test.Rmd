@@ -9,7 +9,7 @@ author:
   name: Tom Morley
 output:
   word_document: default
-bibliography: M:/My Documents/bibTex/library.bib
+#bibliography: M:/My Documents/bibTex/library.bib
 ---
 
 

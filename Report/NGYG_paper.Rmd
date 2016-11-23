@@ -20,7 +20,7 @@ output:
 fontsize: 11pt
 geometry: margin=1in
 keywords: Yield Gap
-bibliography: M:/My Documents/bibTex/library.bib
+#bibliography: M:/My Documents/bibTex/library.bib
 subtitle: Check
 thanks: "**Current version**: `r format(Sys.time(), '%B %d, %Y')`; **Corresponding author**: michiel.vandijk@wur.nl."
 abstract: NGA MAize yield gaps abstract
