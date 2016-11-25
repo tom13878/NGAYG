@@ -5,7 +5,8 @@
 if(Sys.info()["user"] == "Tomas"){
   dataPath <- "C:/Users/Tomas/Documents/LEI/data/"
 } else {
-  dataPath <- "N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/NGA/2012/"
+  dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData/NGA/2012/"
+  #dataPath <- "N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/NGA/2012/"
 }
 
 library(haven)
