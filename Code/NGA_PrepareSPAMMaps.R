@@ -15,7 +15,6 @@ lapply(AdditionalPackages, library, character.only = TRUE)
 
 # SET WORKING DIRECTORY
 wdPath <- "D:\\Data\\IPOP\\SPAM\\"
-dataPath <- "D:\\Dropbox\\Michiel_research\\2285000066 Africa Maize Yield Gap\\Analysis\\NGA\\Data"
 setwd(wdPath)
 
 # R SETTINGS
@@ -61,7 +60,7 @@ countryPath = paste(getwd(), "Processed", iso3c, sep="/")
 if (!file.exists(countryPath)) dir.create(path = countryPath)
 
 # GET COUNTRY MAP
-#countryMap <- Get.country.shapefile.f(iso3c, lev=1)
+countryMap <- Get.country.shapefile.f(iso3c, lev=1)
 countryMap <- readRDS(file.path(dataPath, "Basemap/GADM_2.8_NGA_adm1.rds"))
 
 # CROP MAIZE MAPS TO TARGET COUNTRY
@@ -123,5 +122,5 @@ scalingFactor <- scalingFactor$scalingFactor
 Zone_NGA$TargetProduction <- Zone_NGA$production*scalingFactor
 
 # Write file
-write.csv(Zone_NGA, file=file.path(dataPath, "SPAMdata_NGA.csv"), row.names=F)
+write.csv(Zone_NGA, file = "D:/Data/Github/NGAYG/Cache/SPAMdata_NGA.csv", row.names=F)
  

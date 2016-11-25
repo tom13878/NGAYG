@@ -4,10 +4,10 @@
 
 # Compare prices with other prices and check if they are realistic!
 
-wdPath <- "D:\\Data\\Projects\\NGAYG"
+wdPath <- "D:\\Data\\Github\\NGAYG"
 setwd(wdPath)
 
-dataPath <- "N:\\Internationaal Beleid  (IB)\\Projecten\\2285000066 Africa Maize Yield Gap\\SurveyData"
+dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData"
 
 library(dplyr)
 library(ggplot2)
