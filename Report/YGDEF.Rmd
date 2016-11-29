@@ -15,7 +15,9 @@ knitr::opts_chunk$set(echo = TRUE)
 # Introduction
 Yield gap is a powerful concept to illustrate by how much crop yield can be increased.  and has therefore been used by both policy makers.  Despite its abundant use, various definitions are used to measure the yield gap which are not always comparable [@Sumberg]. 
 
-In a recent paper, @Fischer2015 reviewed the various definitions of yield levels and yield gaps. This work expands the work of Fisher and builds on Van Dijk et al. [@Van Dijk] and Silva et al. [@Silva] by contrasting agricultural definitions of crop yield and yield gap with comparable but conceptually different measures used in the economic literature. Moreover, using a large nationally representative farm level survey on maize production in Nigeria, it provides and empirical study and comparison of the different yield levels and yield gaps, something which was missing in the theoretical paper of Fischer. It also illustrates the large impact of the impact of using diferent definitions of the two main components of yield: production and area, which is not explictely discussed by most yield gap studies.  
+In a recent paper, @Fischer2015 reviewed the various definitions of yield levels and yield gaps. This work expands the work of Fisher and builds on Van Dijk et al. [@Van Dijk] and Silva et al. [@Silva] by contrasting and extending agricultural/agronomical(?) definitions of crop yield and yield gap with comparable but conceptually different measures used in the economic literature. A well-known observation in the yield gap literature is that yields tend to stagnate at around 70-85 percent of potential yield [@Cassman1999; @Cassman2003; @Lobell2009, @Vanittersum2013, @Fischer2015]. The common explanation for this phenomenon is that it is simply not economically viable for farmers to completely close the gap because of unfavourable input-output price combinations [@Fisher2014] or the additional costs that are associated with the 'fine-tuning' of crop management [@Cassman2003]. Empirical research on the exact size of this 'exploitable yield gap', which demand information on the prices of inputs and outputs is not common in the agronomic literature and the 70-85 percent gap is mainly based on 'general experience' [@Fischer2014]. 
+
+This paper aims to contributes to this knowlegde gap by emperically estimating 'economic yield level. Moreover, using a large nationally representative farm level survey on maize production in Nigeria, it provides and empirical study and comparison of the different yield levels and yield gaps, something which was missing in the theoretical paper of Fischer. It also illustrates the large impact of the impact of using diferent definitions of the two main components of yield: production and area, which is not explictely discussed by most yield gap studies.  
 
 The structure of the paper is as follows. Section 2 provides a conceptual framework that integrates varies definitions of yield levels and yield gap. Section 3 briefly discusses the Nigerian farm level maize data set that is used to illustrate the conceptual model. Section 4 computes the yield levels and yield gaps followed by a discussion in Section 5. Finally, Section 6 concludes. 
 
@@ -24,20 +26,17 @@ The structure of the paper is as follows. Section 2 provides a conceptual framew
 The literature on yield gaps identifies a number of yield levels that are used to estimate a variety of yield gaps. This section starts with summarizing several conventional yield levels, such as farm yield and potential yield [@Fischer, @Vanittersum] as well as a number of recent extentions that make it possible to decompose the yield gap in a number of components that explain the yield gap [@VanDijk, @Silva], followed by a describtion of various yield gaps and a discussion of measurement issues. 
 
 
-_Potential yield._ For the purpose of illustration, we also assume that water is not limited and therefore the water-limited potential yield level is not relevant
+_Potential yield._ Potential yield (PY) is defined as “the yield of a cultivar when grown in environments to which it is adapted, with nutrients and water non-limiting and with pests, diseases, weeds, lodging, and other stresses effectively controlled” [@Evans1999]. It depends on local climate factors, including  atmospheric CO2 emissions, solar radiation, temperature as well as plant characteristics [@vanIttersum1997]. _Water-limited potential yield_ 
 
 _Farm yield._ Farm yield (FY), also sometimes referred to as actual yield
 
-_Attainable yield_
-
-Attainable yield is the highest observed farmers’ yield in the sample (F2 in Figure 1)
+_Attainable yield_ The notion of 'attainable' yield is used very frequently in the yield gap literature but often meaning different things. @Fischer2015 defines attainbale yield as 'as the yield attained by a farmer from average natural resources when economically optimal practices and levels of inputs have been adopted
+while facing the vagaries of weather', while 
 
 _Technical efficiency yield_
 
 
-_Exploitable yield._ As average farm yields approach the yield potential threshold, it becomes more
-difficult for farmers to sustain yield increases because further gains require the elimination of small imperfections in the integrated management of soil, crops, water, nutrients, and pests. In general, such rigorous fine-tuning is not economically viable on a production scale such that yield stagnation typically occurs when average farm yields reach about 80% of the yield potential ceiling (20).
-Importance
+_Exploitable yield._ 
 
 _Economic yield._ This level is referred to as 'exploitable yield' by @Vanittersum2013. In the agronomic literature it is often assumed that the economic yield is 70-85% of potential yield. 
 
