@@ -96,7 +96,7 @@ Fermont and Benson (2011) Estimating Yield of Food Crops Grown by Smallholder Fa
 
 
 ## Estimation
-
+Boundary lines are often used to estimate yield gaps. Stochastic frontier analysis is somewhat comparable to boundary analysis as it also estimates an envelope curve that represents best-practice yield at each level of input. The advantage of stochastic frontier analysis over boundary analysis is that it simulteaneausly takes into account multiple inputs instead of only addressing one input as is the case in boundary analysis. Depending on the functional form of the yield response curve, inputs can be complementary or substitutes. To keep the estimation tractable we use are relative simple Cobb-Douglas function to estimate the frontier yield response curve. [Perhaps also do Translog/Note on that CD can be used in aggregate analysis of fields.] Stochastic frontier analysis is increasingly used to estimate yield gaps [@Henderson, @Huang, @Silva, @vanDijk]
 
 
 # Maize yield levels and yield gaps in Nigeria
