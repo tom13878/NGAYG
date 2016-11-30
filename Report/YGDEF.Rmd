@@ -24,16 +24,21 @@ This paper aims to contributes to this knowlegde gap by emperically estimating '
 The structure of the paper is as follows. Section 2 provides a conceptual framework that integrates varies definitions of yield levels and yield gap. Section 3 briefly discusses the Nigerian farm level maize data set that is used to illustrate the conceptual model. Section 4 computes the yield levels and yield gaps followed by a discussion in Section 5. Finally, Section 6 concludes. 
 
 # Conceptual framework
-## Definitions of yield levels
 The literature on yield gaps identifies a number of yield levels that are used to estimate a variety of yield gaps. This section starts with summarizing several conventional yield levels, such as farm yield and potential yield [@Fischer, @Vanittersum] as well as a number of recent extentions that make it possible to decompose the yield gap in a number of components that explain the yield gap [@VanDijk, @Silva], followed by a describtion of various yield gaps and a discussion of measurement issues. 
 
 
 _Potential yield._ Potential yield (PY) is defined as “the yield of a cultivar when grown in environments to which it is adapted, with nutrients and water non-limiting and with pests, diseases, weeds, lodging, and other stresses effectively controlled” [@Evans1999]. It depends on local climate factors, including  atmospheric CO2 emissions, solar radiation, temperature as well as plant characteristics [@vanIttersum1997]. _Water-limited potential yield_ 
 
-_Farm yield._ Farm yield (FY), also sometimes referred to as actual yield
+_Actual yield._ Actual yield (Ya), also sometimes referred to as farm yield [@Fischer].
 
-_Attainable yield_ The notion of 'attainable' yield is used very frequently in the yield gap literature but often meaning different things. @Fischer2015 defines attainbale yield as 'as the yield attained by a farmer from average natural resources when economically optimal practices and levels of inputs have been adopted
-while facing the vagaries of weather', while 
+_maximum observed yield/._ This is the maximum observed yield in a sample of farmers or plots
+
+_Attainable yield_ The notion of 'attainable' yield is used very frequently in the yield gap literature but in an inconsistent way, meaning a number of things. @Fischer2015 equates attainable yield with our definition of *economic yield* by defining it as *'the yield attained by a farmer from average natural resources when economically optimal practices and levels of inputs have been adopted while facing the vagaries of weather'* [p.32]. @Sadras use the following definition: *'the best yield achieved through skilful use of the best available technology'* [p. 6]. A similar definition is provided by [@Tittonell and Giller], who coin the term 'locally attainable yield'. In this case the concept of attainable yield to efficiency and use of best-available technology instead of economic constraints. We argue that this is the same to our definiton of *feasible yield*. Finally, several researchers take an emperical approach and estimate attainable yield as the average yield of plots or farms with the highest yield in the sample of observatons [@Hall, @Giller, @Laborte]. The criteria to select farmers is in most cases the top decile or 95% percentile of the cumulative relative frequency curve of yield estimates [@Hall]. In many cases, the emperically observed attainable yield is used as an approximation of (water-limited) potential yield. We argue that this definition of attainable yield is identical to the *best-farmers yield*. 
+
+[LAborte 2012] uses best farmers yield CHECK.
+
+Figure X demonstrates that the three definitions of attainable yield that are used in the literature refer to different farm decisions that are associated with different input-output combinations. Our stuydy on maize yield gaps in Nigeria also shows that the yield levels are far apart and therefore lead to different yield gap measures and, hence, conclusions on how to close the yield gap.   
+
 
 _Technical efficiency yield_
 
