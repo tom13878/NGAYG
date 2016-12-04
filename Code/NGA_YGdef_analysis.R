@@ -214,6 +214,8 @@ db1 <- droplevels(db1)
 db1 <- db1 %>%
   do(filter(., complete.cases(.)))
 
+# Save file
+saveRDS(db1, "Cache/db1.rds")
 
 #######################################
 ############## ANALYSIS ###############
@@ -557,6 +559,8 @@ db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon
 rm(list =grep("X_", ls(), value = TRUE)) # remove checks
 rm(db3, db4, db5, db6, db6a, db7, db8)
 
+# Save data
+saveRDS(db9_harv, "Cache/db9_harv.rds")
 #######################################
 ### YIELD GAP ANALYSIS FOR AREA_GPS ###
 #######################################
@@ -1241,119 +1245,7 @@ boxplot2 <-ggplot(data=db12, aes(x=yieldgap, y=value)) +
 boxplot2
 ggsave(plot = boxplot2, ".\\FigTab\\Distribution2.png", height = 150, width = 200, type = "cairo-png", units="mm")
 
-# Maps with GYGA yield potential and plot information
-# transform shapefile in dataframe for ggplot. rownames are used as ID for the countries. Using ID gives strange results. 
-# Additional data is linked back again
-library(rgdal)
-library(sp)
-library(raster)
-library(foreign)
-library(gdata)
-#library(ggthemes)
-library(cairo)
 
-# GYGA DATA
-GYGApath <- "D:\\Data\\IPOP\\GYGA\\"
-
-dsn=paste(GYGApath, "\\CZ_SubSaharanAfrica\\CZ_AFRGYGACNTRY.shp", sep="")
-ogrListLayers(dsn)
-ogrInfo(dsn, layer="CZ_AFRGYGACNTRY")
-GYGA.Africa<-readOGR(dsn, layer = "CZ_AFRGYGACNTRY")
-projection(GYGA.Africa) # check projection
-GYGA.Africa <- spTransform(GYGA.Africa, CRS("+proj=longlat +datum=WGS84"))
-
-# Get GYGA
-GYGA.country.yield.data <- read_excel(file.path(GYGApath, "GygaNigeria.xlsx"), sheet=3)
-
-# Select data for maize
-GYGA.country.yield.data <- subset(GYGA.country.yield.data, CROP=="Rainfed maize")
-
-# Cut out ETH from GYGA map
-GYGA.country <- GYGA.Africa[GYGA.Africa$REG_NAME=="Nigeria",]
-
-# Link yield gap data
-# in order to merge data with spatialpolygondataframe the row.names need to be the same.
-# For this reason I first merge the additionald data and then create a spatialpolygondataframe
-# again ensuring that the rownames are preserved.
-
-GYGA.country.data <- as(GYGA.country, "data.frame")
-GYGA.country.data$id <-row.names(GYGA.country.data)
-GYGA.country.data <- merge(GYGA.country.data, GYGA.country.yield.data[,c(1:8)], by.x=c("GRIDCODE"), by.y=c("CLIMATEZONE"), all.x=TRUE, sort=FALSE)
-row.names(GYGA.country.data)<-GYGA.country.data$id
-GYGA.country <- SpatialPolygonsDataFrame(as(GYGA.country, "SpatialPolygons"),
-                                         data=GYGA.country.data)
-
-# Maps with GYGA yield potential and plot information
-# transform shapefile in dataframe for ggplot. rownames are used as ID for the countries. Using ID gives strange results. 
-# Additional data is linked back again
-GYGA.country.fort <- fortify(GYGA.country) 
-GYGA.country.fort <- merge(GYGA.country.fort, GYGA.country.data, by="id")
-GYGA.country.fort$yieldclass <- cut(GYGA.country.fort$YW, breaks=c(6, 8.5, 11, 13.5, 16, 19))
-
-meanYield <- db9 %>%
-  group_by(lon, lat) %>%
-  summarize(n=n(),
-            meanYield = (sum(Y*area)/sum(area))/1000) %>%
-  filter(n>1)
-meanYield$meanYield2 <- cut(meanYield$meanYield, breaks=c(0, 1, 2, 3, 12))
-
-GYGA_LSMS <- ggplot()+
-  geom_polygon(data=GYGA.country.fort, aes(x=long, y=lat, group=group, fill=yieldclass), colour="black")+
-  geom_polygon(data=subset(GYGA.country.fort, is.na(YW)), aes(x=long, y=lat, group=group), fill="white", colour="black") +
-  scale_fill_discrete(name="Potential water\nlimited yield (tons)") +
-  geom_point(data=meanYield, aes(x=lon, y=lat, size=(meanYield2)), colour="black")+
-  scale_size_manual(name="Average yield (tons)", values=c(1, 2, 3, 4, 5)) +
-  coord_equal()+
-  labs(x="", y="")+
-  theme_classic() +
-  theme(legend.key=element_blank(),
-        line = element_blank(),
-        axis.text = element_blank())
-
-GYGA_LSMS
-ggsave(plot = GYGA_LSMS, ".\\Graphs\\GYGA_LSMS.png", height = 150, width = 200, type = "cairo-png", units="mm")
-
-# Zonal map with community yield levels
-# read in map of tanzania as a SpatialPolygonsDataFrame
-library(raster)
-library(maptools)
-countryMap <- getData('GADM', country = "NGA", level = 1) 
-
-# Rename zones using LSMS names
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Benue", "Federal Capital Territory", "Kogi", "Niger", "Kwara", "Nassarawa", "Plateau")] <- "NORTH CENTRAL"
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Bauchi", "Taraba", "Adamawa", "Borno", "Gombe", "Yobe")] <- "NORTH EAST"
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Kaduna", "Katsina", "Zamfara", "Jigawa", "Kano", "Kebbi", "Sokoto")] <- "NORTH WEST"
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Abia", "Ebonyi", "Imo", "Anambra", "Enugu")] <- "SOUTH EAST"
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Akwa Ibom", "Cross River", "Rivers", "Bayelsa", "Delta", "Edo")] <- "SOUTH SOUTH"
-countryMap@data$ZONE[countryMap@data$NAME_1 %in% c("Ekiti", "Ondo", "Oyo", "Ogun", "Osun", "Lagos")] <- "SOUTH WEST"
-countryMap@data$ZONE <- factor(countryMap@data$ZONE)
-countryMapData <- countryMap@data
-
-#  fortify spatial data to use with ggplot and join using join functions from dplyr
-#    The join is on id, make sure all ids are character vectors
-countryMap@data <- rename(countryMap@data, id = ID_1)
-countryMap@data$id <- as.character(countryMap@data$id)
-tf <- fortify(countryMap)
-tf2 <- left_join(tf, countryMap@data)
-# Use ggplot to plot map of Tanzania, specifying the labels and choosing nice colours
-#    from the RColorBrewer package
-library(RColorBrewer)
-#display.brewer.all()
-
-p4 <- ggplot()+
-  geom_polygon(data=tf2, aes(x=long, y=lat, group=group, fill=ZONE), colour="black")+
-  geom_point(data=meanYield, aes(x=lon, y=lat, size=(meanYield2)), colour="black")+
-  scale_fill_brewer(name = "Zones", palette = "Set1") +
-  scale_size_manual(name="Average yield (tons)", values=c(1.5, 2.5, 3.5, 4,5)) +
-  coord_equal()+
-  labs(x="", y="")+
-  theme_classic() +
-  theme(legend.key=element_blank(),
-        line = element_blank(),
-        axis.text = element_blank())
-p4 
-
-ggsave(plot = p4, ".\\Graphs\\datamap.png", height = 150, width = 200, type = "cairo-png", units="mm")
 
 
 

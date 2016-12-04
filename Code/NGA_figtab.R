@@ -53,42 +53,42 @@ dbsum <- db1 %>% dplyr::select(Yield = yld_harv, Elevation = elevation,
 
 
 ### SFA ANALYSIS
-sfaTL <- sfa(logyld ~  
-               logN + loglab + logasset +
-               logN2 + loglab2 + logasset2 + logNlab + logNasset +
-               #logNirrig +  logNrain + loglabirrig +
-               logarea +
-               irrig + 
-               manure + herb + fung + insec +
-               mech +
-               elevation +
-               SOC2 + phdum2 + 
-               #rain_wq + 
-               AEZ +
-               crop_count2 +  
-               r
-             ,data = db1, maxit = 1500, restartMax = 20, tol = 0.000001)
-summary(sfaTL, extraPar = TRUE)
-lrtest(sfaTL)
-
-model <- sfaTL
-rawTable <-as.data.frame(summary(model, extraPar = F)$mleParam)
-varnames <- rownames(rawTable)
-xvar <- varnames[c(1:26)]
-  
-rawTable <- rawTable %>%
-    mutate(variable = varnames) %>%
-    dplyr::rename(P = `Pr(>|z|)`) %>%
-    mutate(sign = ifelse(P <= 0.001, "***",
-                         ifelse(P <= 0.01, "**",
-                                ifelse(P <= 0.05, "*", ""))))
-  
-sfaTable <- data.frame(variable = varnames, stringsAsFactors=FALSE)
-sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, 2))
-sfaTable$"Std. Error" <- sprintf("%.3f", round(rawTable$"Std. Error", 2))
-sfaTable$sign <- rawTable$sign
-  
-xtable <- filter(sfaTable, variable %in% xvar) %>%  setNames(c("", "Coef.", "std. Error", ""))
+# sfaTL <- sfa(logyld_harv ~  
+#                logN + loglab + logasset +
+#                logN2 + loglab2 + logasset2 + logNlab + logNasset +
+#                #logNirrig +  logNrain + loglabirrig +
+#                logarea +
+#                irrig + 
+#                manure + herb + fung + insec +
+#                mech +
+#                elevation +
+#                SOC2 + phdum2 + 
+#                #rain_wq + 
+#                AEZ +
+#                crop_count2 +  
+#                r
+#              ,data = db1, maxit = 1500, restartMax = 20, tol = 0.000001)
+# summary(sfaTL, extraPar = TRUE)
+# lrtest(sfaTL)
+# 
+# model <- sfaTL
+# rawTable <-as.data.frame(summary(model, extraPar = F)$mleParam)
+# varnames <- rownames(rawTable)
+# xvar <- varnames[c(1:26)]
+#   
+# rawTable <- rawTable %>%
+#     mutate(variable = varnames) %>%
+#     dplyr::rename(P = `Pr(>|z|)`) %>%
+#     mutate(sign = ifelse(P <= 0.001, "***",
+#                          ifelse(P <= 0.01, "**",
+#                                 ifelse(P <= 0.05, "*", ""))))
+#   
+# sfaTable <- data.frame(variable = varnames, stringsAsFactors=FALSE)
+# sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, 2))
+# sfaTable$"Std. Error" <- sprintf("%.3f", round(rawTable$"Std. Error", 2))
+# sfaTable$sign <- rawTable$sign
+#   
+# xtable <- filter(sfaTable, variable %in% xvar) %>%  setNames(c("", "Coef.", "std. Error", ""))
 
 
 ###################################
@@ -186,7 +186,7 @@ GYGA_LSMS <- ggplot()+
         line = element_blank(),
         axis.text = element_blank())
 
-GYGA_LSMS
+#GYGA_LSMS
 #ggsave(plot = GYGA_LSMS, ".\\Graphs\\GYGA_LSMS.png", height = 150, width = 200, type = "cairo-png", units="mm")
 
 
@@ -228,7 +228,10 @@ ADM1 <- ggplot() +
   theme(legend.key=element_blank(),
         line = element_blank(),
         axis.text = element_blank())
-ADM1 
+#ADM1 
+
+# Save map
+ggsave(plot = ADM1, ".\\Graphs\\ADM1.png", height = 150, width = 200, type = "cairo-png", units="mm")
 
 # Save image for use in Rmarkdown
 save.image("Cache/FigTab.Rdata")
