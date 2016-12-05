@@ -18,36 +18,23 @@ source(file.path(root ,"Code/NGA_FigTab.R"))
 ```
 
 # Introduction
-Yield gap is a powerful concept to illustrate the potential to increase future crop yield. It is defined as the difference between potential yield and actual yield observed at the plot, farm or regional level. Despite its abundant use, numerous definitions are used to quantify the yield gap which makes comparison difficult and adds to the confusion. In a recent review of the use of yield gap analysis in key policy papers @Sumberg concluded that _"it is most often used without the discipline or caveats associated with the best examples of its use in crop production ecology and microeconomics"_ [p.509] and _"there is a tension between the notion of yield gap as developed in crop ecology (although even here there is no single or consistent usage) and micro-economic studies"_ [p. 510]. 
-This
+Yield gap is a powerful concept to illustrate the potential to increase future crop yield. It is defined as the difference between potential yield and actual yield observed at the plot, farm or regional level. Despite its abundant use, the yield gap can be defined and measured in a number of ways, which has resulted in lack of consistency in yield gap analysis in the literature [@Lobell2009]. Furthermore, in a recent review of the use of yield gap analysis in key policy papers @Sumberg noted that _"there is a tension between the notion of yield gap as developed in crop ecology (although even here there is no single or consistent usage) and micro-economic studies"_ [p. 510]. 
 
+The aim of this paper is to address some of these criticisms by integrating micro-economic and agronomic yield gap approaches into one single framework. It extends the work of @Fisher2015, who recently reviewed definitions of crop yield and yield gaps and builds on the work of Van Dijk et al. [@VanDijk] and Silva et al. [@Silva], who combined agroniomic and economic approaches to yield gap analysis. 
 
-Argue that it is essential to use standard economics theory instead of a rule tumb. Economic yield is taken as 70-85% of potential yield based on emperical estimates that are not country and regional specific. Similar to diferentiation in agroecoligical conditions, which have been strongly emphasised by agronomists, farmers are equally confronted by large variations in market conditions adn associated prices and costs. For example it is well-known that in particular developing countries are characterised by imperfect and isolated markers due to poor infrastructure resulting in high transactions costs and local markets between which prices may differ substantially. Using an uniform rate of 80% as has been the rule before will result in biased estimates of the yield gap. 
+We critically review some of the most comon yield gap definitions and higlight a number of inconsistencies. We analyse the definition of actual yield... [ADD]. In partical we demonstrate that the definition and use of 'attainable yield' is fraught with difficulties and in practice has been used to define several conceptually different production levels. 
 
-A well-known observation in the yield gap literature is that yields tend to stagnate at around 70-85 percent of potential yield [@Cassman1999; @Cassman2003; @Lobell2009, @Vanittersum2013, @Fischer2015]. The common explanation for this phenomenon is that it is simply not economically viable for farmers to completely close the gap because of unfavourable input-output price combinations [@Fisher2014] or the additional costs that are associated with the 'fine-tuning' of crop management [@Cassman2003]. Empirical research on the exact size of this 'exploitable yield gap', which demand information on the prices of inputs and outputs is not common in the agronomic literature and the 75-85 percent gap is mainly based on 'general experience' [@Fischer2014]. This figure is commonly used in policy recommendations and assessments but not studies [van oort 2014, Aramburo 2015]. As Fischer points out "quote on costs and dev countries", this figure is likely to be a gross overstatement for developing counties characterised by large transport costs, etc.
+We also critically review the use of the term 'exploitable yield level [@Cassman2003, @VanIttersum2013], sometimes referred to as 'economic yield level'. Exploitable yield is used to capture the part of the yield gap that will not be closed because of economic constraints. It is generaly equated to be 75-85% of potential yield [@Cassman1999; @Cassman2003, @VanIttersum2013]. As pointed out by @Fischer in a recent review on definitions of crop yield and yield gaps, these numbers are based on "general experience" [p.11] and mainly represent to situations _"where there is no other competition for the farmers’ resources, and world prices and reasonable transport costs operate"_ [p.11]. He also points out that in situtations Where this does not occur (e.g. Sub-Saharan Africa) characterised by poor infrastructure and weak institutions, the exploitable yield gap is expected to be much higher. Despite its weak underpinnings the 75-80% 'rule of thumb' is applied frequently as a feasible target in policies to assess potential to increase future crop production. [@vanOort2014, @Aramburo2015], which can be potentialy misleading, in particular for Sub-Saharan African countries.
 
+We argue that the definition of (true) economic yield should be rooted in neoclassical economic theory, the dominant paradigm in econimics, and be estimatd using information on the prices of inputs and outputs. Analogue to arguments in crop ecology, which stress the localised nature of agroclimatic conditions, we argue that economic yield levels are location specific. It is well-known that in many developing countries (subnational) trade is limited due to poor infrastructure resulting in isolated markets and differentiated market prices [@WorldBank].
 
+Finally, to conceptually clarify the different yield levels and yield gaps we introduce two new yield levels that build on economic efficiency estimation and are now regularly used to estimate yield gaps [REF]. 
 
-
-
-
-In a recent paper, @Fischer2015 reviewed the most common definitions of yield levels and yield gaps. This studydwork extends the work of @Fisher2015 by (1) 
-
-
-and builds on Van Dijk et al. [@VanDijk] and Silva et al. [@Silva] by contrasting and extending agricultural/agronomical(?) definitions of crop yield and yield gap with comparable but conceptually different measures used in the economic literature. 
-
-
-
-This paper aims to contributes to this knowlegde gap by bringing in concepts from economics, in particular technical efficiency yield gap and the economic yield gap. Previously technical eficiency not acknowledged (Silva is an exception) and economic yield gap [@Fischer2016] (confusingly also referred to as attainable yield gap and exploitable yield gap in the literature) defined using a 'rule of tumb'. We provide a theoretical definiton of economic yield gap that is firmly framed in neoclassical economic theory, the dominant paradigm in economics. We also provide an empirical application that demonstrates the various yield levels and yield gaps. This reveals that ...
-
-emperically estimating 'economic yield level. Moreover, using a large nationally representative farm level survey on maize production in Nigeria, it provides and empirical study and comparison of the different yield levels and yield gaps, something which was missing in the theoretical paper of Fischer. It also illustrates the large impact of the impact of using diferent definitions of the two main components of yield: production and area, which is not explictely discussed by most yield gap studies.  
-
-The literature on yield gaps identifies a number of yield levels that are used to estimate a variety of yield gaps. This section starts with summarizing the conventional yield levels (i.e. actual, attainable and potential yield) that are frequently used in the agronomic literature [@Fischer, @VanIttersum1997]. In addition, we present a several other yield levels that have recently been proposed, which make it possible to decompose the yield gap in a number of components to explain the yield gap [@VanDijk, @Silva]. Figure [X] combin, followed by a describtion of various yield gaps and a discussion of measurement issues. 
-
+To demonstrate our framework we present an application using a large nationally representative farm level survey on maize production in Nigeria. [ADD].
 
 The structure of the paper is as follows. Section 2 provides a conceptual framework that integrates varies definitions of yield levels and yield gap. Section 3 briefly discusses the Nigerian farm level maize data set that is used to illustrate the conceptual model. Section 4 computes the yield levels and yield gaps followed by a discussion in Section 5. Finally, Section 6 concludes. 
 
-Yield gap studies are interesting for two reasons. The first is that they measure the size of they yield gap, defined as the difference between potential yield (Yp) and actual yield (Ya) to ilustrate the potential to increase future yield. The second is to reveal key causes for the existence of yield gaps in order to provide policy and management recommendations to increase agricultural productivity and efficiency.
+
 # Background
 ## Conventional yield levels
 For the discussion it is relevant to briefly summarise the convential yield levels that are used in the agronomic literature to estimate yield gaps.
@@ -65,14 +52,15 @@ _Attainable yield_ is used frequently in the yield gap literature but often in a
 _Highest farmers' yield._ (or best farmers' yield) is average of the top 90 or 95 percentile actual yield observed in a sample of farmers or plots [@Laborte2012, @Silva2016]. It is idential to the last definition of attainable yield mentioned above. 
 
 
-# Conceptual framework
+## Conceptual framework
 Figure ? depicts our conceptual framework to illustrate and disentange the various yield levels that are used in the literature. It shows the observed input and output combinations of a number of agricultural units (e.g. field, farm or region). For purpose of illustration, we assume that the observations are small-scale farms in Africa, who produce a single output (e.g. maize) using one input (e.g fertilizer), agroeconomic conditions are identical for all farms and water is not limited. The _theoretical yield response function_ describes the relationship between yield and inputs under perfect crop management and most advanced technology. The maximum of the function is the potential yield level. The _frontier yield response function_ is estimated using actual observations from a sample of farmers or plots in a specific country or region. It measures best-practice performance at all input levels and reflects the available technology and best management practices in the region.  
 
 Figure X depicts the two yield levels that determine the conventional yield gap: Actual yield ($Y_a$) for farm $F_1$ and potential yield ($Y_p$) and associated input levels. Similar to @titonell2013, we argue that the yield gap is caused by two main factors. The first is the availability and use of resources. The relationship between resource use and yield is given by the yield response curve. Intensification will results in higher yields, represented by a movement over the curve to the right. The amount of  inputs actually used by the farmer is strongly influenced by (1) economic considerations (i.e. profit maximization) and (2) risk attitude. The latter is particularly important in developing countries such as Nigeria that are characterised by subsistence farmers, limited insurance and credit systems and volatile climatic conditions (e.g. frequent droughts). It has been shown that under these circumstances, farmers will only purchase fertilizer if expected profit margins are high [ADD REF]. 
 
-The second cause of yield gaps is related to the efficient use and adoption of technology. Two different processes are relevant. The first is technical efficiency, which is defined as the farm’s ability to produce maximum output given a set of inputs and technology [@Farell; @coelli]. Due to a combination of factors (e.g. farm size, experience and access to extension services  - see @Bravo-Ureta2007; @Ogundari2014 for reviews), the majority of farmers in Africa will have a lower technical efficiency than best practice farmers, even if they use the same level of inputs and face the same agroeconomic conditions. This is illustrated by the farms that are located under the frontier yield response curve. The second is the adoption of advanced technologies. As has been poined out by @Titonell2013 most small-scale farmers are subsistence farmers with limited access to appropriate technologies (e.g. precision farming) and knowlegde about advanced crop management [Example?]. Even if resource availability would not be a problem and farmers would produce at best-practice level, technological constraints would still prevent them from producing (near) potential yield. 
+The second cause of yield gaps is related to the efficient use and adoption of technology. Two different processes are relevant. The first is technical efficiency, which is defined as the farm’s ability to produce maximum output given a set of inputs and technology [@Farell; @coelli]. Due to a combination of factors (e.g. experience,  and access to extension services  - see @Bravo-Ureta2007; @Ogundari2014 for reviews), the majority of farmers in Africa will have a lower technical efficiency than best practice farmers, even if they use the same level of inputs and face the same agroeconomic conditions. This is illustrated by the farms that are located under the frontier yield response curve. The second is the adoption of advanced technologies. As has been poined out by @Titonell2013 most small-scale farmers are subsistence farmers with limited access to appropriate technologies (e.g. precision farming) and knowlegde about advanced crop management [Example?]. Even if resource availability would not be a problem and farmers would produce at best-practice level, technological constraints would still prevent them from producing (near) potential yield. 
 
 Figure X depicts the three yield levels that are related with the economic, technical efficiency and technology constraints discussed above: 
+
 _Technical efficiency yield_ measures best-practice performance for a field, farm or region at each input level and reflects the available technology and best management practices in the sample.
 
 _Economic yield._ is defined as the yield level where profits are maximized [@Vandijk2016]. At this level, the marginal cost of acquiring an additional unit of input (e.g. fertilizer) is equal to the marginal revenue of producing an additional unit of output (e.g. tons of maize). This definition of economic yield is consistent with neoclassical economic theory, the dominant paradigm in economics, which postulates that economic actors (e.g. farmers) maximize profits (not production), subject to given output prices, input costs and production technology [@Sadoulet]. We prefer this definition over the use of _exploitable yield_ and _economic yield_ outlined above, which are based on a 'rule of thumb' rather than theorectical assumptions.
@@ -103,9 +91,6 @@ knitr::include_graphics("../FigTab/Yield_Gap_Framework.png")
  
 ## Yield gaps
 The various yield levels can be combined to define a variety of yield levels. Table x summarizes the yield gaps that have been used in the literature [@Fischer, @VanDijk, @Silva, @vanIttersum], including a short describtion of what they intend to measure. The total yield gap (YG) is most commonly used in the agronomic literature and measures the potential to increase biophysical yield. In practice, farmers will often not reach this level for a variety of reseans that are captured by decompisitions of the total yield gap. not be able to reach the potential yield level because of econ 
-
-
-
 
 ## Measurement issues
 Large differences between official crop yield statistics and independent yield surveys have been reported for African countries (see Van oort[2016 p. 3 for references, also include Gollin paper and @grassini 2015, who compare sources.]). Also see Sadras p 12.
@@ -141,13 +126,18 @@ We also estimate highest farmers' yield to assess if it is close to any of the t
 
 # Conclusions/Discussion
 Main findings
+
 - Reviewed conventional yield levels used in agronomic literature and revealed some inconsistencies in the use and definition of certain yield levels. In particular the use of attainable yield and exploitable yield.
 - We present a consistent framework that decomposes the conventional yield gap into four parts that are firmly rooted in neoclassical economics and therefore provide a theoretical framework on explaining why yield falls below potential. 
 - We also demonstrated how the impact of actual yield definitions on yield gap. 
 
 Recommendations:
+
 - We recommend that attainable yield gap is not used as it is a highly confusing term as it can mean: economic yield, technical efficiency yield or . We propsose to use the definitions that actually. We have similar objections to the term exploitable yield, which is based on a rule of thumb. Better to use..
 - We prefer to use yield measured in fm and total plot area as measure for actual yield as in this way, the yield gap captures all farmings decisions that might explain the yield gap. Using harvest area excludes the potential constraints that led the farmer not to use the full area. In any case researchers should properly explain which definition they used to measure actual yield. 
 
 limitations
+
 - study only covers two years. Recommended number of years is 5(?). Actual yield might be biased because of outliers. Better to use more years, possible in the future when LSMS is repeated.
+
+# References
