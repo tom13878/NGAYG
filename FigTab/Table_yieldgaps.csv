@@ -1,0 +1,6 @@
+yield gap,Calculation,Definition,Purpose
+Total yield gap (Yg),Yp - Ya,,
+Technical efficiency yield gap,Yte - Ya,,
+Economic yield gap,Ye - Yte,,
+Feasible yield gap,Yf - Ye,,
+Resource yield gap,Yf - yte,,
