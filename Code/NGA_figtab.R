@@ -54,42 +54,61 @@ dbsum <- db1 %>% dplyr::select(Yield = yld_harv, Elevation = elevation,
 
 
 ### SFA ANALYSIS
-# sfaTL <- sfa(logyld_harv ~  
-#                logN + loglab + logasset +
-#                logN2 + loglab2 + logasset2 + logNlab + logNasset +
-#                #logNirrig +  logNrain + loglabirrig +
-#                logarea +
-#                irrig + 
-#                manure + herb + fung + insec +
-#                mech +
-#                elevation +
-#                SOC2 + phdum2 + 
-#                #rain_wq + 
-#                AEZ +
-#                crop_count2 +  
-#                r
-#              ,data = db1, maxit = 1500, restartMax = 20, tol = 0.000001)
-# summary(sfaTL, extraPar = TRUE)
-# lrtest(sfaTL)
-# 
-# model <- sfaTL
-# rawTable <-as.data.frame(summary(model, extraPar = F)$mleParam)
-# varnames <- rownames(rawTable)
-# xvar <- varnames[c(1:26)]
-#   
-# rawTable <- rawTable %>%
-#     mutate(variable = varnames) %>%
-#     dplyr::rename(P = `Pr(>|z|)`) %>%
-#     mutate(sign = ifelse(P <= 0.001, "***",
-#                          ifelse(P <= 0.01, "**",
-#                                 ifelse(P <= 0.05, "*", ""))))
-#   
-# sfaTable <- data.frame(variable = varnames, stringsAsFactors=FALSE)
-# sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, 2))
-# sfaTable$"Std. Error" <- sprintf("%.3f", round(rawTable$"Std. Error", 2))
-# sfaTable$sign <- rawTable$sign
-#   
-# xtable <- filter(sfaTable, variable %in% xvar) %>%  setNames(c("", "Coef.", "std. Error", ""))
+sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_harv + 
+                     logasset + logae_harv + 
+                     logseedq_harv +
+                     logarea_gps +
+                     pestherb +
+                     irrig +
+                     #mech + 
+                     antrac + 
+                     slope + elevation +
+                     SOC2 + phdum2 + 
+                     rain_wq + rain_wq2+
+                     crop_count2 + surveyyear2,
+                   data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+
+summary(sfaCD1_harv, extraPar = TRUE)
+lrtest(sfaCD1_harv)
+
+sfaCD1_gps <- sfa(logyld_gps ~ noN + logN_gps + 
+                    logasset + logae_gps + 
+                    logseedq_gps +
+                    logarea_gps +
+                    pestherb +
+                    irrig +
+                    #mech + 
+                    antrac + 
+                    slope + elevation +
+                    SOC2 + phdum2 + 
+                    rain_wq + rain_wq2+
+                    crop_count2 + surveyyear2,
+                  data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+
+summary(sfaCD1_gps, extraPar = TRUE)
+lrtest(sfaCD1_gps)
+
+
+Tbl_sfaCD1_harv <- sfaTable_f(sfaCD1_harv) %>%
+  dplyr::select(-variable)
+Tbl_sfaCD1_gps <- sfaTable_f(sfaCD1_gps) %>%
+  mutate(variable = gsub("_gps", "", variable))
+
+Tbl_sfa <- bind_cols(Tbl_sfaCD1_gps, Tbl_sfaCD1_harv)
+
+olsCD1_gps <- lm(logyld_gps ~ noN + logN_gps + logasset + logae_gps + 
+                   logseedq_gps +
+                   logarea_gps +
+                   mech + antrac + 
+                   #inter_crop +
+                   slope + elevation +
+                   SOC2 + phdum2 + 
+                   rain_wq + rain_wq2+
+                   crop_count2 + surveyyear2,
+                 data = db1)
+
+
+stargazer(olsCD1_gps, type="text")
 
 
 ###################################
