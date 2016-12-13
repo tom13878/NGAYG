@@ -60,7 +60,10 @@ GYGA <- read_excel(file.path(dataPath, "Other/GYGA/GygaRainfedMaizeSubSaharanAfr
 
 maxYP <- max(GYGA$YP)*1000
 dbP <- dbP %>% 
+  rename(area_harv_farmer = harv_area) %>%
   mutate(yld_gps = crop_qty_harv/area_gps,
+         yld_farmer = crop_qty_harv/area_farmer,
+         yld_harv_farmer = crop_qty_harv/area_harv_farmer,
          yld_harv = crop_qty_harv/area_harv) %>%
   filter(yld_gps <= maxYP & yld_harv <= maxYP) 
   
@@ -81,10 +84,12 @@ db0 <- dbP %>%
                 rain_wq, 
                 slope, elevation,
                 yld_harv, yld_gps,
-                area_gps, area_harv,
+                yld_farmer, yld_harv_farmer,
+                area_gps, area_harv, 
+                area_harv_farmer, area_farmer,
                 ae,
                 seed, seed_q,
-                area_tot, area_gps,
+                area_tot, 
                 implmt_value, lvstk_valu, lvstk2_valu,
                 pest, herb,
                 N_harv, N_gps, 
@@ -177,19 +182,18 @@ db0 <- db0 %>%
       group_by(hhid) %>%
       mutate(
         #loglab_bar=mean(loglab, na.rm=TRUE),
-             logae_bar=mean(logae, na.rm=TRUE),
-             logN_bar=mean(logN, na.rm=TRUE),
+             logae_harv_bar=mean(logae_harv, na.rm=TRUE),
+             logN_harv_bar=mean(logN_harv, na.rm=TRUE),
              noN_bar=mean(noN, na.rm=TRUE),
              logasset_bar=mean(logasset, na.rm=TRUE),
-             area_bar=mean(area, na.rm=TRUE),
-             logarea_bar=mean(logarea, na.rm=TRUE),
+             logarea_gps_bar=mean(logarea_gps, na.rm=TRUE),
              #irrig_bar=mean(irrig, na.rm = TRUE),
              #legume_bar=mean(legume, na.rm = TRUE),
              pest_bar=mean(pest, na.rm = TRUE),
              herb_bar=mean(herb, na.rm = TRUE),
              pestherb_bar=mean(pestherb, na.rm = TRUE),
              seed_bar=mean(seed, na.rm = TRUE),
-             logseed_q_bar=mean(logseed_q, na.rm=TRUE),
+             #logseed_q_bar=mean(logseed_q, na.rm=TRUE),
              mech_bar=mean(mech, na.rm = TRUE),
              antrac_bar=mean(antrac, na.rm = TRUE),
              #inter_crop_bar=mean(inter_crop, na.rm = TRUE),
@@ -245,31 +249,6 @@ olsCD1_gps <- lm(logyld_gps ~ noN + logN_gps + logasset + logae_gps +
                     crop_count2 + surveyyear2,
                   data = db1)
 
-olsCD2 <- lm(logyld ~ noN + logN + logasset + logae + 
-               logseed_q +
-               logarea +
-               herb + pest +
-               pestherb +
-               mech + 
-               antrac +
-               seed +
-               #inter_crop +
-               slope + elevation +
-               SOC2 + phdum2 + 
-               rain_wq + rain_wq2+
-               crop_count2 + 
-               surveyyear2 + 
-               noN_bar + logN_bar + 
-               logae_bar + logarea_bar + 
-               logseed_q_bar +
-               #irrig_bar + 
-               herb_bar + pest_bar +
-               pestherb_bar +
-               mech_bar + antrac_bar +
-               seed_bar +
-               #inter_crop_bar +
-               crop_count_bar,
-             data = db1_gps)
 
 stargazer(olsCD1_harv, olsCD1_gps, type="text")
 
@@ -561,6 +540,7 @@ rm(db3, db4, db5, db6, db6a, db7, db8)
 
 # Save data
 saveRDS(db9_harv, "Cache/db9_harv.rds")
+
 #######################################
 ### YIELD GAP ANALYSIS FOR AREA_GPS ###
 #######################################
@@ -811,8 +791,8 @@ rm(db3, db4, db5, db6, db6a, db7, db8)
 # Comparison of various farm yield measures
 
 yield_comp <- db1 %>%
-  select(hhid, plotid, yld_harv, yld_gps, ZONE, crop_count2) %>%
-  gather(variable, value, -hhid, -plotid, -ZONE, -crop_count2) %>%
+  dplyr::select(hhid, plotid, yld_harv, yld_gps, yld_harv_farmer, yld_farmer, ZONE, crop_count2) %>%
+  gather(variable, value, -hhid, -plotid, -ZONE, -crop_count2) 
   
 pure_yield <- filter(yield_comp, crop_count2 == 1)  %>%
   mutate(variable = ifelse(variable == "yld_harv", "yld_harv_pure", "yld_gps_pure"))
@@ -828,17 +808,27 @@ p1
 
 yield_comp2 <- yield_comp %>%
   group_by(variable, ZONE) %>%
+  mutate(value = winsor2(value)) %>%
   summarize(value = mean(value, na.rm=TRUE))
 
-ggplot(data = yield_comp2, aes(x = ZONE, y = value, colour = variable, shape = variable)) + 
-  geom_line(aes(group = ZONE), colour = "black", linetype = "dashed") +
-  geom_point(size = 2.5) +
-  theme_bw() 
-
-# Obtain 
+# SPAM Data 
 SPAMData <- read.csv("Cache/SPAMData_NGA.csv") %>%
-  rename(Y_SPAM = yield, PROD = TargetProduction, ZONE = zone)
+  rename(Y_SPAM = yield, PROD = TargetProduction, ZONE = zone) %>%
+  select(value = Y_SPAM, ZONE) %>%
+  mutate(variable = "SPAM")
 
+# GYGA Data
+GYGA <- read_excel(file.path(dataPath, "Other/GYGA/GygaRainfedMaizeSubSaharanAfrica.xlsx"), sheet = "Climate zone") %>%
+  filter(COUNTRY == "Nigeria")
+
+yield_comp2 <- bind_rows(yield_comp2, SPAMData)
+
+
+ggplot(data = yield_comp2, aes(x = ZONE, y = value, colour = variable, shape = variable)) + 
+  geom_line(aes(group = ZONE), colour = "black", linetype = "solid") +
+  geom_point(size = 2.5) +
+  scale_shape_manual(values=seq(0,15)) +
+  theme_bw() 
 
 
 

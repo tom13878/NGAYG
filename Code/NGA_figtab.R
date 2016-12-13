@@ -12,8 +12,8 @@ AdditionalPackages <- c("frontier", "stargazer", "haven")
 lapply(AdditionalPackages, library, character.only = TRUE)
 
 ### SET WORKING DIRECTORY
-#wdPath <- "D:/Data/Github/NGAYG/"
-wdPath <- "H:\\MyDocuments\\Github\\NGAYG"
+wdPath <- "D:/Data/Github/NGAYG/"
+#wdPath <- "H:\\MyDocuments\\Github\\NGAYG"
 setwd(wdPath)
 
 dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData"
