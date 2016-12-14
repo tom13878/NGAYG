@@ -24,7 +24,9 @@ library(rprojroot)
 root <- find_root(is_rstudio_project)
 knitr::opts_chunk$set(echo = FALSE, fig.height = 10, fig.width = 10)
 
-source(file.path(root ,"Code/NGA_FigTab.R"))
+source(file.path(root ,"Code/NGA_fig.R"))
+source(file.path(root ,"Code/NGA_tbl.R"))
+source(file.path(root ,"Code/NGA_map.R"))
 ```
 
 # Introduction
@@ -138,7 +140,7 @@ Maize yields may also depend on factors including the amount of labour on a plot
 
 
 ```{r GYGA}
-#GYGA_LSMS
+GYGA_LSMS
 
 #We also estimate highest farmers' yield to assess if it is close to any of the theoretical yield levels. A major problem with using highest farmers' yield in ##is dealing with the variation in agroecological conditions across the sample. In large samples such as the LSMS-ISA for Nigeria that cover plots in all #parts of the country, potential yield in the XXX zones much lower than that of farmers in XX zones [Figure X]. Simply taking the average yield of the top 95 #percentile of the complete sample will results in a highly biased benchmark. To only way to overcome this issue would be to take averages per agroecological #zone [@mann]. However, it seems that this is not done in most studies [CHECK].
 
