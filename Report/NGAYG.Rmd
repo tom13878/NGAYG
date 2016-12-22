@@ -1,5 +1,5 @@
 ---
-title: "More than the gap: Yield gap extensions, measurement issues and application"
+title: "Decomposing economic and technology yield gaps in Nigeria"
 author: "Michiel van Dijk, Tom Morley, Zuzana Smeets-Kristkova"
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
@@ -130,14 +130,30 @@ The second is a measurement problem and deals with how to measure area (planted 
 ```
 
 
-## Methods
+
+
 # Data
+
+## Farm and plot level data
 The data for this report come from the nationally representative 2010-11 and 2012-13 waves of the  Nigeria General Household Survey (GHS). In total the GHS is a cross section of 22,000 households, 5,000 of which were included as panel households forming the GHS-panel. A relatively low rate of attrition was recorded between the two waves amounting to a 96% successful follow up rate across all households and 97% among only rural households. The focus of the GHS is to improve the quality of data on the agricultural sector and was conducted by the National Bureau of Statistics in partnership with the Federal Ministry of Agriculture and Rural Development (FMA&RD), the National Food Reserve Agency (NFRA), the Bill and Melinda Gates Foundation (BMGF) and the World Bank (WB). In each wave, households were visited twice reflecting the post planting and post harvest visits. In addition to agricultural activities, a broad range of topics including agricultural production, consumption, health and a number of socio-economic characteristics were recorded. The data was collected at several levels, including at the plot, household and enumeration area level, and the location of each household was GPS recorded with an offset to preserve household anonymity.
 
 We approach the study of smallholder maize productivity from the perspective of narrowing the yield gap by identifying the role of nitrogen application rates on maize yields. The agricultural questionnaire of the GHS records key information at the plot level including the quantity of maize harvested, the quantity of fertilizer applied and the area of the plot. From this information maize yield, and nitrogen application rates can be calculated. Plot area measurements were recorded by GPS in each wave, and where it was not possible to record the GPS area, for example due to cloudy weather, the World Bank provides a complete set of plot areas with imputed missing values. Another aspect of this study is the extent to which nitrogen application rates reflect economically meaningful decisions. This is informed by the relative price of maize and nitrogen, both of which can be derived from the GHS survey. As some price measurements clearly fell outwith an acceptable or plausible range, the prices of both maize and nitrogen were winsored to remove values that were more than three standard deviations from the median _(probably should be done per region??)_. A subsidy program did exist in Nigeria over the course of this survey. However, farmers were not asked whether they received these subsidies for the fertilizer they purchased which may also have consequences for the analysis ... 
 
 Maize yields may also depend on factors including the amount of labour on a plot, or farmer characteristics. In addition the biophysical role of nitrogen on maize can also depend on soil, seed type  and climate conditions, for example the carbon content of the soil (Barrett). To some extent this information is included in the GHS and the spatial and climate data that accompanies the main survey. In this report we go further by using the GPS recorded household locations to combine the GHS with external data with a finer resolution than currently provided with the GHS survey. We therefore have more accurate information on key variables to improve the analysis of the maize yield gap and the role of nitrogen application.    
 
+## Input and output price information
+ Transport costs
+
+```{Fig_pricies}
+Fig_prices
+```
+
+
+
+## Climate and soil variables
+
+
+## Potential yield estimations
 
 ```{r GYGA}
 GYGA_LSMS
@@ -145,6 +161,9 @@ GYGA_LSMS
 #We also estimate highest farmers' yield to assess if it is close to any of the theoretical yield levels. A major problem with using highest farmers' yield in ##is dealing with the variation in agroecological conditions across the sample. In large samples such as the LSMS-ISA for Nigeria that cover plots in all #parts of the country, potential yield in the XXX zones much lower than that of farmers in XX zones [Figure X]. Simply taking the average yield of the top 95 #percentile of the complete sample will results in a highly biased benchmark. To only way to overcome this issue would be to take averages per agroecological #zone [@mann]. However, it seems that this is not done in most studies [CHECK].
 
 ```
+
+Figure X shows the distribution of maize and nitrogen prices per zone in Nigeria. It demonstrates that prices vary considerably within and between geographical locations. In the Northern zones, the __interquartile?__ range lies between X and X Niara, while in the Southern zones prices are on average lower. Nitrogen prices also vary across Nigeria but exhibit a similar average that around XX Naira. It 
+
 
 ```{r Tbl_sumstat}
 # library(psych)
@@ -154,13 +173,19 @@ GYGA_LSMS
 #       digits=2)
 ```
 
-## Estimation
+# Estimation of yield levels
+## Technical efficiency yield
 Boundary lines are often used to estimate yield gaps [REFS]. In this study we use stochastic frontier analysis [@Meeusen1977; @Aigner1977] to estimate the yield levels in Figure 1. This approach is somewhat comparable to boundary analysis as it also estimates an envelope curve that represents best-practice yield at each level of input. The advantage of stochastic frontier analysis over boundary analysis is that it simultaneously takes into account multiple inputs instead of only addressing one input as is the case in boundary analysis. Depending on the functional form of the yield response curve, inputs can be complementary or substitutes. Stochastic frontier analysis is increasingly used to estimate yield gaps [@Henderson2016, @Hoang2013, @Silva2016, @VanDijk2016]
 
 We estimate a frontier yield response curve that accounts for the impact of growth defining, growth limiting and growth reducing factors on crop growth [VanIttersum1997[ as well as economic production factors [@VanDijk, @Liverpool], which all will have impact on actual yield [@Barrett]. It is defined as follows:
 
-where $Z$ are growth defining factors, including. $z$ are growth limiting factors, $x$ are growth reducing factors and $$ are economic production factors. econo 
+where $Z$ are growth defining factors, including. $z$ are growth limiting factors, $x$ are growth reducing factors and $X $ are economic production factors.  
 
+## Economic yield
+
+## Feasible yield
+
+## Potential yield
 
 # Results
 ## Frontier yield response estimation
@@ -169,10 +194,15 @@ where $Z$ are growth defining factors, including. $z$ are growth limiting factor
 pander(Tbl_sfa)
 ```
 
+
 ## Yield gaps 
 - calculate different yield gaps, also attainable yield gap and show differences
 
+- Compare distributions of yield gap per zone. 
 
+Comparison with literature
+
+Compare highest farmer yield with economic and feasible and show difference!!
 
 # Conclusions/Discussion
 

@@ -48,6 +48,7 @@ GYGA.Africa <- spTransform(GYGA.Africa, CRS("+proj=longlat +datum=WGS84"))
 GYGA_country <- GYGA.Africa[GYGA.Africa$REG_NAME=="Nigeria",]
 plot(GYGA_country)
 rm(GYGA.Africa)
+unique(GYGA_country@data$ID)
 
 # Get GYGA data and add YG
 GYGA_yg_df <- read_excel(file.path(GYGApath, "GygaNigeria.xlsx"), sheet=3) %>%

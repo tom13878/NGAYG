@@ -16,7 +16,7 @@ library(readxl)
 library(frontier)
 library(AER)
 
-wdPath <- "D:\\Data\\Projects\\NGAYG"
+wdPath <- "D:\\Data\\Github\\NGAYG"
 setwd(wdPath)
 
 source("Code/winsor.r")

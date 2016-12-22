@@ -372,7 +372,7 @@ db3 <- db2_sfaCD1_harv %>%
   )
 
 # A number of plots have yld higher than the estimated frontier (Y-TEY>0) caused by the random error. 
-# By far most of these are plots that do not use fertilizer. They probably have high yield because of measurement error, better soil properties or unknown factors.
+# A large number of these plots do not use fertilizer. They probably have high yield because of measurement error, better soil properties or unknown factors.
 X_above_frontier <- filter(db3, Y-TEY>0)
 mean(db3$Y-db3$TEY)
 
@@ -384,9 +384,9 @@ mean(db3$Y-db3$TEY)
 # It is possible that Npm is larger than Npy, which is not possible from a biophysical perspective.
 # We cap Npm at Npy.
 
-# # Based on experimental plot data (see Excel), we set Npy to 150. C
+# # Based on experimental plot data (see Excel), we set Npy to 300.
 # CHECK CHANGE FOR NIGERIA
-Npy <- 150
+Npy <- 300
 
 # # Cap Npm
 db3 <- mutate(db3, Npm = ifelse(Npm>Npy, Npy, Npm))
@@ -415,7 +415,6 @@ db5 <- db4 %>%
 
 # 4. PY: Potential yield
 # Merge Yield potential with maize plot database
-# Merge Yield potential with maize plot database
 db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
   mutate(PY=PY*1000) %>% left_join(db5,.)
 
@@ -441,7 +440,7 @@ X_PY_EY_check <- filter(db6, PY-EY<0)
 X_PY_PFY_check <- filter(db6, PY-PFY<0)
 
 # Compare different yield levels
-# Picture shows that PFY is much to high for plots with the lowest PY. This is probably due to the uniform use of Npf of 120 N/ha.
+# Picture shows that PFY is too high for plots with the lowest PY. This is probably due to the uniform use of Npf of 120 N/ha.
 # It would be better to have zone specific Npf values.
 ggplot(data = db6, aes(y = PY, x = PFY)) +
   geom_point() +
@@ -492,7 +491,7 @@ db8 <- db7 %>%
 
 # Consistency check of yield gaps.
 # ERROR
-X_ERROR <- filter(db8, ERROR_l<0) # Half of observation has a negetive error which is what would be expected # CHECK
+X_ERROR <- filter(db8, ERROR_l<0) # some plots have a negative error, which is normal there will be values above the frontier due to error
 mean(db8$ERROR_l)
 mean(db8$ERROR_s)
 
@@ -509,7 +508,7 @@ mean(db8$EYG_s)
 
 # EUYG
 # A number of plots have negative EUYG_l because Npm is larger than Nyw, the nitrogen that is required to achieve Potential yield (Yw).
-# Not the case here: CHECK
+# Not the case here
 # We have corrected this so check should be 0.
 X_EUYG <- filter(db8, EUYG_l<0)        
 mean(db8$EUYG_s)
@@ -534,6 +533,7 @@ summary(X_overall)
 # Create database with relevant variables for further analysis
 db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon, crop_count2, area_harv, yesN, Y, N_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
                      EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
+
 # Clean up
 rm(list =grep("X_", ls(), value = TRUE)) # remove checks
 rm(db3, db4, db5, db6, db6a, db7, db8)
@@ -631,7 +631,7 @@ mean(db3$Y-db3$TEY)
 # We cap Npm at Npy.
 
 # # Based on experimental plot data (see Excel), we set Npy to 150. CHECK CHANGE FOR NIGERIA
-Npy <- 150
+Npy <- 300
 
 # # Cap Npm
 db3 <- mutate(db3, Npm = ifelse(Npm>Npy, Npy, Npm))
@@ -783,460 +783,4 @@ db9_gps <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon,
 # Clean up
 rm(list =grep("X_", ls(), value = TRUE)) # remove checks
 rm(db3, db4, db5, db6, db6a, db7, db8)
-
-#######################################
-####### FIGURES AND TABLES ############
-#######################################
-
-# Comparison of various farm yield measures
-
-yield_comp <- db1 %>%
-  dplyr::select(hhid, plotid, yld_harv, yld_gps, yld_harv_farmer, yld_farmer, ZONE, crop_count2) %>%
-  gather(variable, value, -hhid, -plotid, -ZONE, -crop_count2) 
-  
-pure_yield <- filter(yield_comp, crop_count2 == 1)  %>%
-  mutate(variable = ifelse(variable == "yld_harv", "yld_harv_pure", "yld_gps_pure"))
-
-yield_comp = bind_rows(yield_comp, pure_yield)
-
-p = ggplot(data = yield_comp, aes(x = variable, y=value)) + 
-  geom_boxplot(outlier.shape=NA) + 
-  facet_wrap(~ZONE)
-sts <- boxplot.stats(yield_comp$value)$stats
-p1 = p + coord_cartesian(ylim = c(sts[2]/2,max(sts)*1.2)) 
-p1
-
-yield_comp2 <- yield_comp %>%
-  group_by(variable, ZONE) %>%
-  mutate(value = winsor2(value)) %>%
-  summarize(value = mean(value, na.rm=TRUE))
-
-# SPAM Data 
-SPAMData <- read.csv("Cache/SPAMData_NGA.csv") %>%
-  rename(Y_SPAM = yield, PROD = TargetProduction, ZONE = zone) %>%
-  select(value = Y_SPAM, ZONE) %>%
-  mutate(variable = "SPAM")
-
-# GYGA Data
-GYGA <- read_excel(file.path(dataPath, "Other/GYGA/GygaRainfedMaizeSubSaharanAfrica.xlsx"), sheet = "Climate zone") %>%
-  filter(COUNTRY == "Nigeria")
-
-yield_comp2 <- bind_rows(yield_comp2, SPAMData)
-
-
-ggplot(data = yield_comp2, aes(x = ZONE, y = value, colour = variable, shape = variable)) + 
-  geom_line(aes(group = ZONE), colour = "black", linetype = "solid") +
-  geom_point(size = 2.5) +
-  scale_shape_manual(values=seq(0,15)) +
-  theme_bw() 
-
-
-
-#######################################
-
-# Number of households and plots per year
-HH <- db9 %>% 
-  summarize(HH = length(unique(hhid)),
-            Plots = n())
-
-
-dbsum <- db2_sfaCD1_gps %>% dplyr::select(yld_gps, ae, yesN, N_gps, area_gps, SOC2, rain_wq, slope, elevation, crop_count2)
-sumstat <- stargazer(as.data.frame(dbsum), type = "text", digits=2, out=".\\FigTab\\summaryStat.html")
-
-
-# Table with key information per region_lsms and subtotals
-Yieldsum <- bind_rows(
-  db9 %>% 
-    dplyr::select(Y, N_gps, yesN, ZONE, area_gps) %>%
-    group_by(ZONE) %>%
-    summarize(Yield = mean(Y),
-              Yield_w = (sum(Y*area_gps)/sum(area_gps)),
-              NitrogenUser = round(mean(yesN)*100, digits=1),
-              Number=n()),
-  db9 %>%
-    dplyr::select(Y, N_harv, yesN, area_harv, ZONE) %>%
-    summarize(ZONE = "Total",  
-              Yield = mean(Y),
-              Yield_w = (sum(Y*area_harv)/sum(area_harv)),
-              NitrogenUser = round(mean(yesN)*100, digits=1),
-              Number=n())
-) %>% arrange(ZONE)
-
-# Table with key information per region and subtotals for pure maize plots
-Yieldsum_pure <- bind_rows(
-  db9 %>%
-    filter(crop_count2==1) %>%
-    dplyr::select(Y, N, yesN, ZONE, area) %>%
-    group_by(ZONE) %>%
-    summarize(Yield_p = mean(Y),
-              Yield_w_p = (sum(Y*area)/sum(area))
-    ),
-  db9 %>%
-    filter(crop_count2==1) %>%
-    dplyr::select(Y, N, yesN, ZONE, area) %>%
-    summarize(ZONE = "Total", 
-              Yield_p = mean(Y),
-              Yield_w_p = (sum(Y*area)/sum(area))
-    )
-)
-
-
-Nitrogensum <- bind_rows(
-  db9 %>% 
-    dplyr::select(Y, N, yesN, ZONE) %>%
-    filter(yesN ==1) %>%
-    group_by(ZONE) %>%
-    summarize(Nitrogen = mean(N)),
-  db9 %>%
-    dplyr::select(Y, N, yesN, ZONE) %>%
-    filter(yesN ==1) %>%
-    summarize(ZONE= "Total", Nitrogen = mean(N))
-) 
-
-
-Pricessum <- bind_rows(
-  Prices %>% 
-    dplyr::select(ZONE, Pn, Pc) %>% 
-    do(filter(., complete.cases(.))) %>%
-    group_by(ZONE) %>%
-    summarize(
-      NitrogenPrice = mean(Pn, na.rm=T),
-      MaizePrice = round(mean(Pc, na.rm=T), digits=0)),
-  Prices %>% 
-    dplyr::select(ZONE, Pn, Pc) %>% 
-    do(filter(., complete.cases(.))) %>%
-    summarize(ZONE = "Total",
-              NitrogenPrice = mean(Pn, na.rm=T),
-              MaizePrice = round(mean(Pc, na.rm=T), digits=0))
-) 
-
-Zonalsum <- left_join(Yieldsum, Nitrogensum) %>%
-  left_join(., Yieldsum_pure) %>%
-  left_join(., Pricessum) %>%
-  dplyr::select(ZONE, Number, Yield_w, Yield_w_p, NitrogenUser, Nitrogen, NitrogenPrice, MaizePrice) %>%
-  arrange(ZONE)
-Zonalsum <- xtable(Zonalsum, digits = c(0,0,0,0,0,0,0,0,0))
-print(Zonalsum, type="html", file="FigTab\\Zonal.html")
-
-
-# SFA table
-# Easier to cut and paste in Excel
-#sfaTable <- as.data.frame(summary(sfaCD2, extraPar = F)$mleParam)
-#print(xtable(sfaTable), type="html", file=".\\Analysis\\TZA\\Graphs\\Sfa.html", digits=3)
-summary(sfaCD1, extraPar = TRUE)
-lrtest(sfaCD2)
-
-# Essentials for powerpoint
-sfatable <- as.data.frame(summary(sfaCD2)$mleParam)[,c(1,3)]
-# Production function
-sfatable_pf <- sfatable[c(1:22),]
-# Efficiency function
-#sfatable_ef <- sfatable[c(23:29),]
-
-# Table with yield levels
-YieldLevels <- bind_rows(
-  db9 %>% 
-    dplyr::select(Zone = ZONE, Y, Ycor, TEY, EY, PFY, PY, area) %>%
-    group_by(Zone) %>%
-    summarize(Y =(sum((Y)*area)/sum(area)),
-              Ycor = (sum((Ycor)*area)/sum(area)),
-              TEY = (sum((TEY)*area)/sum(area)),
-              EY = (sum((EY)*area)/sum(area)),
-              PFY = (sum((PFY)*area)/sum(area)),
-              PY = (sum((PY)*area)/sum(area))
-    ),
-  db9 %>% 
-    dplyr::select(Zone = ZONE, Y, Ycor, TEY, EY, PFY, PY, area) %>%
-    summarize(Zone = "Total", 
-              Y =(sum((Y)*area)/sum(area)),
-              Ycor = (sum((Ycor)*area)/sum(area)),
-              TEY = (sum((TEY)*area)/sum(area)),
-              EY = (sum((EY)*area)/sum(area)),
-              PFY = (sum((PFY)*area)/sum(area)),
-              PY = (sum((PY)*area)/sum(area)))) %>%
-  dplyr::select(Zone, Y, Ycor, TEY, EY, PFY, PY)
-
-
-YieldLevels <- xtable(YieldLevels, digits = c(0,0,0,0,0,0,0,0))
-print(YieldLevels, type="html", file=".\\FigTab\\YieldLevels.html")
-
-# Table with relative yield gap information per zone
-# Note that by definition, YG_s computed by weighting individual YG_s values is not the same as multiplication of weighted TEYG_s etc.
-# We therefore calculate YG_s as the product of the weighted components.
-ZonalYieldGap_s <- bind_rows(
-  db9 %>% 
-    dplyr::select(Zone = ZONE, ERROR_s, TEYG_s, EYG_s, EUYG_s, TYG_s, YG_s_Ycor, YG_s, area) %>%
-    group_by(Zone) %>%
-    summarize(ERROR_s =(sum((ERROR_s)*area)/sum(area)),
-              TEYG_s = (sum((TEYG_s)*area)/sum(area)),
-              EYG_s = (sum((EYG_s)*area)/sum(area)),
-              EUYG_s = (sum((EUYG_s)*area)/sum(area)),
-              TYG_s = (sum((TYG_s)*area)/sum(area)),
-              YG_s = (sum((YG_s)*area)/sum(area)),
-              YG_s_Ycor = (sum((YG_s_Ycor)*area)/sum(area)),
-              ERROR = (1-ERROR_s)*100,
-              TEYG = (1-TEYG_s)*100,
-              EYG = (1-EYG_s)*100,
-              EUYG = (1-EUYG_s)*100,
-              TYG = (1-TYG_s)*100,
-              YG = (1-(ERROR_s*TEYG_s*EYG_s*EUYG_s*TYG_s))*100,
-              YG_Ycor = (1-(TEYG_s*EYG_s*EUYG_s*TYG_s))*100
-    ),
-  db9 %>% 
-    dplyr::select(Zone = ZONE, ERROR_s, TEYG_s, EYG_s, EUYG_s, TYG_s, YG_s_Ycor, YG_s, area) %>%
-    summarize(Zone = "Total", 
-              ERROR_s =(sum((ERROR_s)*area)/sum(area)),
-              TEYG_s = (sum((TEYG_s)*area)/sum(area)),
-              EYG_s = (sum((EYG_s)*area)/sum(area)),
-              EUYG_s = (sum((EUYG_s)*area)/sum(area)),
-              TYG_s = (sum((TYG_s)*area)/sum(area)),
-              YG_s = (sum((YG_s)*area)/sum(area)),
-              YG_s_Ycor = (sum((YG_s_Ycor)*area)/sum(area)),
-              ERROR = (1-ERROR_s)*100,
-              TEYG = (1-TEYG_s)*100,
-              EYG = (1-EYG_s)*100,
-              EUYG = (1-EUYG_s)*100,
-              TYG = (1-TYG_s)*100,
-              YG = (1-(ERROR_s*TEYG_s*EYG_s*EUYG_s*TYG_s))*100,
-              YG_Ycor = (1-(TEYG_s*EYG_s*EUYG_s*TYG_s))*100)) %>%
-  dplyr::select(Zone, TEYG, EYG, EUYG, TYG, YG = YG_Ycor)
-
-
-ZonalYieldGap_s <- xtable(ZonalYieldGap_s, digits = c(0,0,0,0,0,0,0))
-print(ZonalYieldGap_s, type="html", file=".\\FigTab\\ZonalYG_s.html")
-
-# Table with absolute yield gap information per zone
-# Note that by definition, YG_s computed by weighting individual YG_s values is not the same as multiplication of weighted TEYG_s etc.
-# We therefore calculate YG_s as the product of the weighted components.
-ZonalYieldGap_l <- bind_rows(
-  db9 %>% 
-    dplyr::select(Zone = ZONE, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l_Ycor, YG_l, area) %>%
-    group_by(Zone) %>%
-    summarize(ERROR_l =(sum((ERROR_l)*area)/sum(area)),
-              TEYG_l = (sum((TEYG_l)*area)/sum(area)),
-              EYG_l = (sum((EYG_l)*area)/sum(area)),
-              EUYG_l = (sum((EUYG_l)*area)/sum(area)),
-              TYG_l = (sum((TYG_l)*area)/sum(area)),
-              YG_l = (sum((YG_l)*area)/sum(area)),
-              YG_l_Ycor = (sum((YG_l_Ycor)*area)/sum(area)),
-              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l)),
-  db9 %>% 
-    dplyr::select(Zone = ZONE, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l_Ycor, YG_l, area) %>%
-    summarize(Zone = "Total", 
-              ERROR_l =(sum((ERROR_l)*area)/sum(area)),
-              TEYG_l = (sum((TEYG_l)*area)/sum(area)),
-              EYG_l = (sum((EYG_l)*area)/sum(area)),
-              EUYG_l = (sum((EUYG_l)*area)/sum(area)),
-              TYG_l = (sum((TYG_l)*area)/sum(area)),
-              YG_l = (sum((YG_l)*area)/sum(area)),
-              YG_l_Ycor = (sum((YG_l_Ycor)*area)/sum(area)),
-              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l))) %>%
-  dplyr::select(-ERROR_l,-YG_l, -YG_lcheck)
-
-ZonalYieldGap_l <- xtable(ZonalYieldGap_l, digits = c(0,0,0,0,0,0,0))
-print(ZonalYieldGap_l, type="html", file=".\\FigTab\\ZonalYG_l.html")
-
-ZonalYieldGap_l_sh <- ZonalYieldGap_l %>%
-  mutate(
-    TEYG = 100*TEYG_l/YG_l_Ycor,
-    EYG = 100*EYG_l/YG_l_Ycor,
-    EUYG = 100*EUYG_l/YG_l_Ycor,
-    TYG = 100*TYG_l/YG_l_Ycor,
-    YG = 100*(TEYG_l + EYG_l + EUYG_l + TYG_l)/YG_l_Ycor) %>%
-  dplyr::select(-TEYG_l:-YG_l_Ycor)
-
-
-ZonalYieldGap_l_sh <- xtable(ZonalYieldGap_l_sh, digits = c(0,0,0,0,0,0,0))
-print(ZonalYieldGap_l_sh, type="html", file=".\\FigTab\\ZonalYG_l_sh.html")
-
-# Calculation of potential increase in production when gap is closed on the basis of sample
-GapClose1 <- mutate(db9, PROD = Y * area,
-                    ERROR_close = ERROR_l*area,
-                    TEYG_close = TEYG_l*area,
-                    EYG_close = EYG_l*area,
-                    EUYG_close = EUYG_l*area,
-                    TYG_close = TYG_l*area,
-                    POTPROD = PROD + ERROR_close + TEYG_close + EYG_close + TYG_close + EUYG_close)
-
-# Total increase in yield per year
-GapClose1a <- GapClose1 %>%
-  #group_by(ZONE) %>%
-  summarize(PROD = sum(PROD, na.rm=T)/1000000,
-            ERROR_close = sum(ERROR_close, na.rm=T)/1000000,
-            TEYG_close = sum(TEYG_close, na.rm=T)/1000000,
-            EYG_close = sum(EYG_close, na.rm=T)/1000000,
-            EUYG_close = sum(EUYG_close, na.rm=T)/1000000,
-            TYG_close = sum(TYG_close, na.rm=T)/1000000,
-            POTPROD = sum(POTPROD, na.rm=T)/1000000)
-
-# Calculation of potential increase in production when gap is closed on the basis of SPAM and FAO data weighted over two surveyyears.
-# As the yield in the LSMS is much lower than the FAO/SPAM yield and also that of the LSMS we apply the different yield shares as found above to the base yield of SPAM.
-# We use Ycor as base. This means we assume there was an error (e) and this is corrected for.
-
-SPAMData <- read.csv("Cache/SPAMData_NGA.csv") %>%
-  rename(Y_SPAM = yield, PROD = TargetProduction, ZONE = zone)
-
-# Closing of yield gaps per zone
-# Note that for some regions, notably those with very low potential yield (Central and Western), closing TEY and EY already results in
-# Closing the gap. To avoid negative closing the EYG, EUYG and TYG are capped.
-# The reason for overshooting can be caused by a variety of factors, including mismeasurement. Most likely is that Nyp is too high for regions
-# With a very low potential. The all over impact is low as the involved regions have very limited maize production.
-
-
-GapClose2 <- db9 %>% 
-  group_by(ZONE) %>%
-  summarize(
-    TEYG_s = sum(TEYG_s*area)/sum(area),
-    EYG_s = sum(EYG_s*area)/sum(area),
-    #TYG_s = (sum((TYG_s)*area)/sum(area)), # TYG_s based on LSMS yield, not used
-    #YG_s = (sum((YG_s)*area)/sum(area)), # YG_s based on LSMS yield, not used
-    EUYG_s = sum(EUYG_s*area)/sum(area),
-    PY = mean(PY, na.rm=T)) %>% # Average of potential yield from GYGA
-  left_join(SPAMData, .) %>%
-  mutate(
-    TEY_SPAM = Y_SPAM/TEYG_s, # TEY using SPAM yield as reference
-    EY_SPAM = TEY_SPAM/EYG_s, # EY using SPAM yield as reference
-    EY_SPAM = ifelse(PY-EY_SPAM<0, PY, EY_SPAM), # Correct EY if impact of TEYG and EYG results in yield larger than PY.
-    EYG_s_SPAM =  TEY_SPAM/EY_SPAM, # Recalculate EYG_s
-    UY_SPAM = EY_SPAM/EUYG_s, # UY using SPAM yield as reference
-    UY_SPAM = ifelse(PY-UY_SPAM<0, PY, UY_SPAM), # Correct UY if impact of TEYG and EYG results in yield larger than PY.
-    EUYG_s_SPAM =  EY_SPAM/UY_SPAM, # Recalculate UEYG_s
-    TYG_s_SPAM = UY_SPAM/PY, # Recalculate TYG_s 
-    check = TEYG_s*EYG_s_SPAM*EUYG_s_SPAM*TYG_s_SPAM, #check if multiplication of different parts is the same as total
-    YG_s = Y_SPAM/PY, # YG_s using SPAM yield as reference
-    PTEYG = PROD/TEYG_s, # Total production when TEYG is closed
-    PEYG = PTEYG/EYG_s_SPAM, # Total production when EYG is closed
-    PEUYG = PEYG/EUYG_s_SPAM, # Total production when EUYG is closed
-    PTYG = PEUYG/TYG_s_SPAM, # Total production when TYG is closed
-    POTPROD = PROD/YG_s, # Total production when YG is closed
-    TEYG_close = PTEYG - PROD, # Additional production when closing TEYG
-    EYG_close = PEYG - PTEYG, # Additional production when closing EYG
-    EUYG_close = PEUYG - PEYG, # Additional production when closing EUYG
-    TYG_close = POTPROD - PEUYG) %>%
-  mutate(check2 = TEYG_close + EYG_close + EUYG_close + TYG_close+PROD)
-
-GapClose2a <- GapClose2 %>% 
-  summarize(PROD = sum(PROD/1000000), # in million tons
-            TEYG_close = sum(TEYG_close/1000000),
-            EYG_close = sum(EYG_close/1000000),
-            TYG_close = sum(TYG_close/1000000),
-            EUYG_close = sum(EUYG_close/1000000), 
-            POTPROD = sum(POTPROD/1000000)) %>%
-  mutate(check2 = TEYG_close + EYG_close + EUYG_close + TYG_close+PROD)
-
-# Closing of yield gap assuming decomposition of levels.
-GapClose3 <- SPAMData %>%
-  rename(Zone = ZONE) %>%
-  left_join(ZonalYieldGap_l_sh, .) %>%
-  left_join(.,YieldLevels) %>%
-  filter(Zone != "Total") %>%
-  mutate(POTPROD = PY/Y_SPAM*PROD, # Total production when YG is closed
-         TEYG_close = (POTPROD-PROD)*TEYG/100, # Additional production when closing TEYG
-         EYG_close = (POTPROD-PROD)*EYG/100, # Additional production when closing EYG
-         EUYG_close = (POTPROD-PROD)*EUYG/100, # Additional production when closing EUYG
-         TYG_close = (POTPROD-PROD)*TYG/100, # Additional production when closing TYG
-         check2 = TEYG_close + EYG_close + EUYG_close + TYG_close+PROD)
-
-GapClose3a <- GapClose3 %>% 
-  summarize(PROD = sum(PROD/1000000), # in million tons
-            TEYG_close = sum(TEYG_close/1000000),
-            EYG_close = sum(EYG_close/1000000),
-            TYG_close = sum(TYG_close/1000000),
-            EUYG_close = sum(EUYG_close/1000000), 
-            POTPROD = sum(POTPROD/1000000)) 
-
-# http://www.r-bloggers.com/waterfall-plots-in-r/
-# Create database for waterfall plot
-# Add error, which is very small to target production
-wf.df <- GapClose3a %>% 
-  dplyr::select(PROD,  TEYG_close, EYG_close, EUYG_close, TYG_close, POTPROD)
-
-wf.df <- as.data.frame(t(wf.df)) %>%
-  mutate(category =c("Actual \n production", " Closing \n technical efficiency \n yield gap", " Closing \n economic \n yield gap",
-                     " Closing \n feasible \n yield gap", " Closing \n technical \n yield gap", "Water-limited \n potential production"),
-         sector = category) %>%
-  rename(value = V1)
-
-# Create waterfall plot
-cbPalette <- c("#009E73", "#CC79A7", "#0072B2", "#D55E00", "black", "#999999")
-waterfall_f(wf.df)
-
-## Determines the spacing between columns in the waterfall chart
-offset <- 0.3
-
-waterfall <- waterfall_f(wf.df, offset=offset) +
-  scale_fill_manual(guide="none", values=cbPalette)+
-  labs(x="", y="Maize production (million tons)") +
-  scale_y_continuous(breaks=seq(0, 70, 5), labels = comma) +
-  theme_classic() 
-
-
-print(waterfall)
-library(Cairo)
-ggsave(plot = waterfall, ".\\Graphs\\Waterfall.png", height = 150, width = 200, type = "cairo-png", units="mm")
-
-# Distribution of relative yield gaps
-db11 <- db9%>%
-  dplyr::select(ZONE, surveyyear, ERROR_s, TEYG_s, EYG_s, EUYG_s, TYG_s, YG_s_Ycor) %>%
-  gather(yieldgap, value, ERROR_s:YG_s_Ycor) %>%
-  filter(yieldgap!="ERROR_s") %>% 
-  droplevels() %>%
-  mutate(value = (1-value)*100,
-         yieldgap = factor(yieldgap, levels = c("TEYG_s", "EYG_s", "EUYG_s", "TYG_s",  "YG_s_Ycor")))
-
-
-# Note that average error=0 and therefore not interesting to show.
-# Show plot with minimum hinges and no outliers.
-boxplot <-ggplot(data=db11, aes(x=yieldgap, y=value)) +
-  #geom_boxplot(fill=c("#D55E00", "#009E73", "#0072B2", "#CC79A7", "#999999"), outlier.colour = NA) +
-  geom_boxplot(fill=c("#D55E00", "#009E73", "#0072B2", "#CC79A7", "#999999"), outlier.colour = "black") +
-  stat_boxplot(geom ='errorbar') +
-  guides(fill=FALSE) +
-  stat_summary(fun.y=mean, geom="point", shape=5, size=4) +
-  theme_classic() +
-  #geom_jitter(position=position_jitter(width=.1, height=0)) +
-  labs(x="", y="Yield gap (%)")+ 
-  scale_x_discrete(breaks=c("TEYG_s", "EYG_s", "EUYG_s", "TYG_s", "YG_s_Ycor"), 
-                   labels=c("Techical efficiency \n yield gap", "Economic \n yield gap", 
-                            "Feasible \n yield gap", "Technical \n yield gap",  "Total \n yield gap")) 
-#facet_wrap(~zone) +
-#scale_y_continuous(breaks=seq(0, 100, 25)) 
-
-# Rescale axes.
-#sts <- boxplot.stats(db11$value)$stats  # Compute lower and upper whisker limits
-#boxplot = boxplot + coord_cartesian(ylim = c(-5,max(sts)*1.05))
-boxplot
-ggsave(plot = boxplot, ".\\FigTab\\Distribution.png", height = 150, width = 200, type = "cairo-png", units="mm")
-
-# Distribution of absolute yield gaps
-db12 <- db9%>%
-  dplyr::select(ZONE, surveyyear, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l_Ycor) %>%
-  gather(yieldgap, value, ERROR_l:YG_l_Ycor) %>%
-  filter(yieldgap!="ERROR_l") %>% 
-  droplevels() %>%
-  mutate(yieldgap = factor(yieldgap, levels = c("TEYG_l", "EYG_l", "TYG_l", "EUYG_l", "YG_l_Ycor")))
-
-# Note that average error=0 and therefore not interesting to show.
-# Show plot with minimum hinges and no outliers.
-boxplot2 <-ggplot(data=db12, aes(x=yieldgap, y=value)) +
-  geom_boxplot(fill=c("#D55E00", "#009E73", "#0072B2", "#CC79A7", "#999999"), outlier.colour = NA) +
-  #geom_boxplot(fill=c("#D55E00", "#009E73", "#0072B2", "#CC79A7", "#999999"), outlier.colour = "black") +
-  stat_boxplot(geom ='errorbar') +
-  guides(fill=FALSE) +
-  stat_summary(fun.y=mean, geom="point", shape=5, size=4) +
-  theme_classic() +
-  labs(x="", y="Yield gap (%)")+ 
-  scale_x_discrete(breaks=c("TEYG_l", "EYG_l", "TYG_l", "EUYG_l", "YG_l_Ycor"), 
-                   labels=c("Techical efficiency \n yield gap", "Economic \n yield gap", 
-                            "Technical \n yield gap", " Economically \n unexploitable \n yield gap", "Yield gap"))
-#+ scale_y_continuous(breaks=seq(0, 100, 25)) 
-
-# Rescale axes.
-boxplot2
-ggsave(plot = boxplot2, ".\\FigTab\\Distribution2.png", height = 150, width = 200, type = "cairo-png", units="mm")
-
-
-
-
-
 
