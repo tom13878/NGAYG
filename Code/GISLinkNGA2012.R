@@ -24,41 +24,22 @@ iso3c <- "NGA"
 surveyYear <- 2012
 
 # SET WORKING DIRECTORY
-dataPath <- "N:/Internationaal Beleid  (IB)/Projecten/2285000066 Africa Maize Yield Gap/SurveyData/NGA/2012"
+dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData/"
 setwd(dataPath)
 
 # SOURCE FUNCTIONS
 
 # DOWNLOAD BASEMAP
-basemapPath = paste0(dataPath, "/../../",  "Other/Spatial/Maps", "/",iso3c)
-
-
-# Obtain country coordinates for target country
-Get.country.shapefile.f <- function(iso3c, lev=0, proj = "+proj=longlat +datum=WGS84"){
-  
-  #download country boundary as spatialpolygonDF (and rewrite as .shp for convenience)
-  targetfile <- paste(iso3c, paste("_adm", lev, ".Rdata", sep=""), sep="")
-  if(file.exists(paste(basemapPath, targetfile, sep="/"))){
-    load(paste(basemapPath, targetfile, sep="/"))
-  } else {
-    gadm=getData('GADM', country=iso3c, level=lev, path=basemapPath)
-  }
-  
-  # change projection 
-  projection <- proj
-  country.sp <- spTransform(gadm, CRS(projection))
-  return(country.sp)
-}
-
-country.map <- Get.country.shapefile.f(iso3c, 2)
+country.map <- readRDS(file.path(dataPath, "Other/Spatial/NGA/GADM_2.8_NGA_adm2.rds"))
+standardproj <- projection(country.map)
 
 # PREPARE LSMS SPATIAL DATAPOINTS
 # Get y2_hhid-GIS link
-HH.geo <- read_dta(file.path(dataPath, "Geodata Wave 2\\NGA_HouseholdGeovars_Y2.dta")) %>%
+HH.geo <- read_dta(file.path(dataPath, "NGA/2012/Geodata Wave 2\\NGA_HouseholdGeovars_Y2.dta")) %>%
             dplyr::rename(lat = LAT_DD_MOD, lon = LON_DD_MOD, eaid = ea) %>%
             dplyr::select(-twi_nga, -srtm_nga) %>%
             filter(!is.na(lon)) # Delete one hh with no geo coordinates
-plot.geo <- read_dta(file.path(dataPath,"Geodata Wave 2/NGA_PlotGeovariables_Y2.dta")) %>%
+plot.geo <- read_dta(file.path(dataPath,"NGA/2012/Geodata Wave 2/NGA_PlotGeovariables_Y2.dta")) %>%
             dplyr::rename(eaid = ea)
             
 # Create list of plot variables
@@ -79,7 +60,6 @@ geo.base <- HH.geo %>%
   unique()
 
 # Create spatial points 
-standardproj<-"+proj=longlat +datum=WGS84"
 geo.coord <- geo.base %>% 
               dplyr::select(lon, lat) %>%
               as.data.frame(.)%>%
@@ -270,7 +250,7 @@ dsn=paste(GYGApath, "\\CZ_SubSaharanAfrica\\CZ_AFRGYGACNTRY.shp", sep="")
 ogrListLayers(dsn)
 ogrInfo(dsn, layer="CZ_AFRGYGACNTRY")
 GYGA <- readOGR(dsn, layer = "CZ_AFRGYGACNTRY") %>%
-  spTransform(., CRS("+proj=longlat +datum=WGS84"))
+  spTransform(standardproj)
 
 # Link yield gap data
 # Yield gap data is provided in a separate file.
@@ -286,7 +266,7 @@ GYGA@data <- GYGA@data %>% mutate(iso = countrycode(REG_NAME,"country.name", "is
 
 # Extract data
 geo.GYGA <- raster::extract(GYGA, geo.coord) %>%
-  dplyr::select(CROP, YA, YW, YW.YA, YP, YP.YA, iso) %>%
+  dplyr::select(CROP, YA, YW, YW.YA, YP, YP.YA, CLIMATEZONE = GRIDCODE, iso) %>%
   cbind(geo.base,.)
 
 # FARMING SYSTEMS 
@@ -346,7 +326,7 @@ points(geo.check.plot, pch = 18, col="red")
 # MERGE LSMS AND GEO DATA
 # Merge plot and household level data, Rename and recode LSMS_ISA geo variables
 
-AEZ_code <- read.csv(file.path(dataPath, "..\\..\\Other\\spatial\\Other\\AEZ_code.csv"))
+AEZ_code <- read.csv(file.path(dataPath, "Other\\spatial\\Other\\AEZ_code.csv"))
 geo.LSMS <- left_join(geo.hh, geo.plot) %>%
             transmute(
               lat,
@@ -384,5 +364,5 @@ geo.LSMS <- left_join(geo.hh, geo.plot) %>%
 geo.total.plot <- left_join(geo.LSMS, geo.total) 
 
 # Write file
-saveRDS(geo.total.plot, file = file.path(dataPath, paste("..\\..\\Other\\Spatial\\NGA\\NGA_geo_2012.rds")))
+saveRDS(geo.total.plot, file = file.path(dataPath, "Other\\Spatial\\NGA\\NGA_geo_2012.rds"))
 
