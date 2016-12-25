@@ -32,9 +32,18 @@ db9_harv <- readRDS(file.path(root, "Cache/db9_harv.rds"))
 #Prices <- readRDS("Cache/Prices_ETH.rds") %>% rename(Pm = maize, Pn = fertilizer)
 #source("Code/waterfall_plot.R")
 
+### DEFINE TARGET CLIMATEZONES
+# Select target zones as CLIMATEZONES > 50 plot observations
+CZ_target <- db9_harv %>%
+  ungroup() %>%
+  dplyr::select(CLIMATEZONE, hhid, plotid) %>%
+  group_by(CLIMATEZONE) %>%
+  summarise(NumberHH = length(unique(hhid)),
+            Numberplot = n())
+CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot > 50] 
+CZ_target <- droplevels(CZ_target)
 
 ### GYGA MAP PREPARATION
-
 # Load polygon map and cut out tartet country
 GYGApath <- "D:\\Data\\IPOP\\GYGA\\"
 dsn=paste(GYGApath, "\\CZ_SubSaharanAfrica\\CZ_AFRGYGACNTRY.shp", sep="")
@@ -48,18 +57,21 @@ GYGA.Africa <- spTransform(GYGA.Africa, CRS("+proj=longlat +datum=WGS84"))
 GYGA_country <- GYGA.Africa[GYGA.Africa$REG_NAME=="Nigeria",]
 plot(GYGA_country)
 rm(GYGA.Africa)
-unique(GYGA_country@data$ID)
 
-# Get GYGA data and add YG
-GYGA_yg_df <- read_excel(file.path(GYGApath, "GygaNigeria.xlsx"), sheet=3) %>%
-  dplyr::filter(CROP=="Rainfed maize") %>%
-  mutate(YG = (YW-YA)/YW*100)
+
+# Get GYGA data and add YG and conbine CLIMATEZONE and PY
+GYGA_yg_df <- read_excel(file.path(GYGApath, "GygaRainfedMaizeSubSaharanAfrica.xlsx"), sheet=3) %>%
+  dplyr::filter(CROP=="Rainfed maize", COUNTRY == "Nigeria") %>%
+  mutate(YG = (YW-YA)/YW*100,
+         YW2 = YW*1000,
+         #CZ_YW = paste0(CLIMATEZONE, " (", format(round(YW), nsmall=0, big.mark=","), " kg/ha)"),
+         CZ_YW = paste0(CLIMATEZONE, " (", round(YW), " kg/ha)"),
+         CZ_YW = factor(CZ_YW, levels = CZ_YW[order(YW2)]))
 
 # Link yield gap data
 # in order to merge data with spatialpolygondataframe the row.names need to be the same.
 # For this reason I first merge the additionald data and then create a spatialpolygondataframe
 # again ensuring that the rownames are preserved.
-
 GYGA_df <- as(GYGA_country, "data.frame") %>%
   rename(CLIMATEZONE = GRIDCODE)
 GYGA_df$id <-row.names(GYGA_df)
@@ -73,60 +85,38 @@ GYGA_country <- SpatialPolygonsDataFrame(as(GYGA_country, "SpatialPolygons"),dat
 GYGA_df_f <- fortify(GYGA_country) %>%
   left_join(., GYGA_df)
 
-### GYGA YIELD GAP 
-# Draw map
-GYGA_YG <- ggplot() +
-  geom_polygon(data = filter(GYGA_df_f, is.na(YG)), aes(x = long, y = lat, group = group, fill = YG), colour = "black")+
-  geom_polygon(data = filter(GYGA_df_f, is.na(YG)), aes(x = long, y = lat, group = group), fill = "white", colour = "black") +
-  #scale_fill_gradientn(colours = terrain.colors(10)) +
-  #scale_fill_gradient(low = "light green", high = "dark green") +
-  scale_fill_distiller(palette = "Spectral", name = "%") +
-  coord_equal() +
-  labs(
-    title = "Water-limited yield gap in Nigeria (%)",
-    #subtitle = "check",
-    caption = "Source: Global Yield Gap Atlas (www.yieldgap.org)",
-    x="", y="") +
-  theme_classic() +
-  theme(legend.key=element_blank(),
-        line = element_blank(),
-        axis.text = element_blank())
-GYGA_YG
 
-### COMBINED YIELD GAP AND LSMS-ISA MAP
-
-# Add clases for YW
-unique(GYGA_df_f$YW)
-GYGA_df_f$YW2 <- cut(GYGA_df_f$YW, breaks=c(5, 7, 9, 11, 13, 15))
-
+### COMBINED POTENTIAL YIELD AND LSMS-ISA MAP
 # Prepare mean yield data
-yld <- db9_harv %>%
+av_yld <- db9_harv %>%
+  ungroup() %>%
   group_by(lon, lat) %>%
   summarize(n=n(),
             av_yld = (sum(Y*area_harv)/sum(area_harv))/1000) %>%
-  filter(n>1)
-yld$av_yld2 <- cut(yld$av_yld, breaks=c(0, 1, 2, 3, 13))
+  filter(n>1) %>%
+  mutate(av_yld2 = cut(av_yld, breaks=c(0, 1, 2, 3, 13)))
 
-# Draw map
-GYGA_LSMS <- ggplot()+
-  geom_polygon(data = filter(GYGA_df_f, !is.na(YW2)), aes(x = long, y = lat, group = group, fill = YW2), colour="black")+
-  geom_polygon(data = filter(GYGA_df_f, is.na(YW2)), aes(x = long, y = lat, group = group), fill = "white", colour = "black") +
-  scale_fill_discrete(name = "Potential water\nlimited yield (tons)") +
-  geom_point(data = yld, aes(x = lon, y = lat, size = av_yld2), colour="black") +
-  scale_size_manual(name = "Average yield (tons)", values = c(1, 2, 3, 4)) +
+
+# Map with target climate zones and average yield
+GYGA_LSMS <- ggplot() +
   coord_equal() +
   labs(
-    title = "Yield gaps and average yield in Nigeria (%)",
+    #title = "Yield gaps and average yield in Nigeria (%)",
     #subtitle = "check",
-    caption = "Source: LSMS-ISA and Global Yield Gap Atlas (www.yieldgap.org)",
+    #caption = "Source: LSMS-ISA and Global Yield Gap Atlas (www.yieldgap.org)",
     x="", y="") +
   theme_classic() +
   theme(legend.key=element_blank(),
         line = element_blank(),
-        axis.text = element_blank())
-
-#GYGA_LSMS
-#ggsave(plot = GYGA_LSMS, ".\\Graphs\\GYGA_LSMS.png", height = 150, width = 200, type = "cairo-png", units="mm")
+        axis.text = element_blank()) +
+  geom_path(data = GYGA_df_f, aes(x = long, y = lat, group = group), colour="black") +
+  geom_polygon(data = filter(GYGA_df_f, !is.na(YW2), !(CLIMATEZONE %in% CZ_target)), aes(x = long, y = lat, group = group), fill = "grey", colour="black") +
+  geom_polygon(data = filter(GYGA_df_f, !is.na(YW2), CLIMATEZONE %in% CZ_target), aes(x = long, y = lat, group = group, fill = CZ_YW), colour="black") +
+  scale_fill_discrete(name = "Climate zone\n (pot. water lim. yield)") +
+  geom_point(data = yld, aes(x = lon, y = lat, size = av_yld2), colour="black") +
+  scale_size_manual(name = "Average yield (ton/ha)", values = c(1, 2, 3, 4)) 
+  
+GYGA_LSMS
 
 
 ### ADMINISTRATIVE MAPS
@@ -150,7 +140,7 @@ countryMap@data$id <- as.character(countryMap@data$id)
 tf <- fortify(countryMap)
 tf2 <- left_join(tf, countryMap@data)
 
-# Use ggplot to plot map of Tanzania, specifying the labels and choosing nice colours
+# Use ggplot to plot map of Nigeria, specifying the labels and choosing nice colours
 # from the RColorBrewer package
 ADM1 <- ggplot() +
   geom_polygon(data = tf2, aes(x = long, y = lat, group = group, fill = ZONE), colour = "black")+
@@ -169,9 +159,24 @@ ADM1 <- ggplot() +
         axis.text = element_blank())
 #ADM1 
 
-# Save map
-#ggsave(plot = ADM1, ".\\Graphs\\ADM1.png", height = 150, width = 200, type = "cairo-png", units="mm")
 
-# Save image for use in Rmarkdown
-#save.image("Cache/FigTab.Rdata")
+### GYGA YIELD GAP 
+# Draw map
+GYGA_YG <- ggplot() +
+  geom_polygon(data = filter(GYGA_df_f, !is.na(YG)), aes(x = long, y = lat, group = group, fill = YG), colour = "black")+
+  geom_polygon(data = filter(GYGA_df_f, is.na(YG)), aes(x = long, y = lat, group = group), fill = "white", colour = "black") +
+  #scale_fill_gradientn(colours = terrain.colors(10)) +
+  #scale_fill_gradient(low = "light green", high = "dark green") +
+  scale_fill_distiller(palette = "Spectral", name = "%") +
+  coord_equal() +
+  labs(
+    title = "Water-limited yield gap in Nigeria (%)",
+    #subtitle = "check",
+    caption = "Source: Global Yield Gap Atlas (www.yieldgap.org)",
+    x="", y="") +
+  theme_classic() +
+  theme(legend.key=element_blank(),
+        line = element_blank(),
+        axis.text = element_blank())
+GYGA_YG
 

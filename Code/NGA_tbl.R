@@ -1,5 +1,5 @@
 #'========================================================================================================================================
-#' Project:  Test
+#' Project:  CIMMYT yield gap
 #' Subject:  Script to create tables
 #' Author:   Michiel van Dijk
 #' Contact:  michiel.vandijk@wur.nl
@@ -91,77 +91,71 @@ Tbl_sfaCD1_gps <- sfaTable_f(sfaCD1_gps) %>%
 
 Tbl_sfa <- bind_cols(Tbl_sfaCD1_gps, Tbl_sfaCD1_harv)
 
-### Table with key information per ZONE and subtotals
-Yieldsum <- bind_rows(
-  db9_harv %>% 
-    dplyr::select(Y, N_harv, yesN, ZONE, area_harv) %>%
-    group_by(ZONE) %>%
-    summarize(Yield = mean(Y),
-              Yield_w = (sum(Y*area_harv)/sum(area_harv)),
-              NitrogenUser = round(mean(yesN)*100, digits=1),
-              Number=n()),
+### CHECK
+# DECIDE WHAT TO REPORT WEIGHTED OR NOT AND CHECK CZ 9901
+check <- filter(dbP, CLIMATEZONE == "9901")
+
+### CROSSTABLE FARMING SYSTEMS AND CLIMATE ZONE
+with(db9_harv, table(fs, CLIMATEZONE))
+
+### TABLE WITH KEY STATISTICS PER CLIMATE ZONE
+# Select target zones as CLIMATEZONES > 50 plot observations
+CZ_target <- db9_harv %>%
+    ungroup() %>%
+    dplyr::select(CLIMATEZONE, hhid, plotid) %>%
+    group_by(CLIMATEZONE) %>%
+    summarise(NumberHH = length(unique(hhid)),
+              Numberplot = n())
+CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot > 50] 
+CZ_target <- droplevels(CZ_target)
+
+# Table with summary information per CZ
+# CHECK ADD other variables in production function
+CZ_tbl <- bind_rows(
   db9_harv %>%
-    dplyr::select(Y, N_harv, yesN, area_harv, ZONE) %>%
-    summarize(ZONE = "Total",  
-              Yield = mean(Y),
-              Yield_w = (sum(Y*area_harv)/sum(area_harv)),
-              NitrogenUser = round(mean(yesN)*100, digits=1),
-              Number=n())
-) %>% arrange(ZONE)
-
-# Table with key information per region and subtotals for pure maize plots
-Yieldsum_pure <- bind_rows(
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  ungroup() %>%
+  dplyr::select(CLIMATEZONE, hhid, plotid, Y, Ycor, N_harv, yesN, area_harv) %>%
+  group_by(CLIMATEZONE) %>%
+  summarise(Y = sum(Y*area_harv, na.rm=TRUE)/ sum(area_harv),
+            Ycor = sum(Ycor*area_harv, na.rm = TRUE)/sum(area_harv),
+            mean_N_harv = mean(N_harv, na.rm=TRUE),
+            Ncon = mean(ifelse(yesN == 1, N_harv, NA), na.rm = TRUE),
+            yesN = round(mean(yesN)*100, digits=1),
+            area_harv = mean(area_harv, na.rm=TRUE),
+            NumberHH = length(unique(hhid)),
+            Numberplot = n()),
   db9_harv %>%
-    filter(crop_count2==1) %>%
-    dplyr::select(Y, N_harv, yesN, ZONE, area_harv) %>%
-    group_by(ZONE) %>%
-    summarize(Yield_p = mean(Y),
-              Yield_w_p = (sum(Y*area_harv)/sum(area_harv))
-    ),
+  filter(!(CLIMATEZONE %in% CZ_target)) %>%
+  ungroup() %>%
+  dplyr::select(CLIMATEZONE, hhid, plotid, Y, Ycor, N_harv, yesN, area_harv) %>%
+  summarise(CLIMATEZONE = "Minor zones",
+            Y = sum(Y*area_harv, na.rm=TRUE)/ sum(area_harv),
+            Ycor = sum(Ycor*area_harv, na.rm = TRUE)/sum(area_harv),
+            mean_N_harv = mean(N_harv, na.rm=TRUE),
+            Ncon = mean(ifelse(yesN == 1, N_harv, NA), na.rm = TRUE),
+            yesN = round(mean(yesN)*100, digits=1),
+            area_harv = mean(area_harv, na.rm=TRUE),
+            NumberHH = length(unique(hhid)),
+            Numberplot = n()),
   db9_harv %>%
-    filter(crop_count2==1) %>%
-    dplyr::select(Y, N_harv, yesN, ZONE, area_harv) %>%
-    summarize(ZONE = "Total", 
-              Yield_p = mean(Y),
-              Yield_w_p = (sum(Y*area_harv)/sum(area_harv))
-    )
-)
+    ungroup() %>%
+    dplyr::select(CLIMATEZONE, hhid, plotid, Y, Ycor, N_harv, yesN, area_harv) %>%
+    summarise(CLIMATEZONE = "Total",
+              Y = sum(Y*area_harv, na.rm=TRUE)/ sum(area_harv),
+              Ycor = sum(Ycor*area_harv, na.rm = TRUE)/sum(area_harv),
+              mean_N_harv = mean(N_harv, na.rm=TRUE),
+              Ncon = mean(ifelse(yesN == 1, N_harv, NA), na.rm = TRUE),
+              yesN = round(mean(yesN)*100, digits=1),
+              area_harv = mean(area_harv, na.rm=TRUE),
+              NumberHH = length(unique(hhid)),
+              Numberplot = n())
+  ) %>%
+  mutate(sharePlots = Numberplot/Numberplot[CLIMATEZONE == "Total"]*100) %>%
+  gather(variable, value, -CLIMATEZONE) %>%
+  spread(CLIMATEZONE, value)
 
-
-Nitrogensum <- bind_rows(
-  db9_harv %>% 
-    dplyr::select(Y, N_harv, yesN, ZONE) %>%
-    filter(yesN ==1) %>%
-    group_by(ZONE) %>%
-    summarize(Nitrogen = mean(N_harv)),
-  db9_harv %>%
-    dplyr::select(Y, N_harv, yesN, ZONE) %>%
-    filter(yesN ==1) %>%
-    summarize(ZONE= "Total", Nitrogen = mean(N_harv))
-) 
-
-
-Pricessum <- bind_rows(
-  Prices %>% 
-    dplyr::select(ZONE, Pn, Pc) %>% 
-    do(filter(., complete.cases(.))) %>%
-    group_by(ZONE) %>%
-    summarize(
-      NitrogenPrice = mean(Pn, na.rm=T),
-      MaizePrice = round(mean(Pc, na.rm=T), digits=0)),
-  Prices %>% 
-    dplyr::select(ZONE, Pn, Pc) %>% 
-    do(filter(., complete.cases(.))) %>%
-    summarize(ZONE = "Total",
-              NitrogenPrice = mean(Pn, na.rm=T),
-              MaizePrice = round(mean(Pc, na.rm=T), digits=0))
-) 
-
-Zonalsum <- left_join(Yieldsum, Nitrogensum) %>%
-  left_join(., Yieldsum_pure) %>%
-  left_join(., Pricessum) %>%
-  dplyr::select(ZONE, Number, Yield_w, Yield_w_p, NitrogenUser, Nitrogen, NitrogenPrice, MaizePrice) %>%
-  arrange(ZONE)
+  
 
 
 # Table with relative yield gap information per zone

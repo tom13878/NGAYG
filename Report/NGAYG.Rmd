@@ -194,6 +194,12 @@ where $Z$ are growth defining factors, including. $z$ are growth limiting factor
 pander(Tbl_sfa)
 ```
 
+# CLIMATE ZONES
+To calculate potential yield, the GYGA identifies climate zones, which have similar biophysical conditions [@VanBussum]. There are in total XX Climate zones in Nigeria. Climate zones are defined by their XX number.
+
+In this study we focus on the main maize producing area in Nigeria for which we have sufficient number of observations over space and time. Most maize is produced in seven out of the XX climate zones that are defined by the GYGA. In order to have sufficient units for our analysis we set the minimum number of observations to 50 per climate zone. Our final sample accounts for X percent of the total maize plots in Nigeria for which information is presented in the LSMS-ISA (Annex A). Most maize is produced in the cereal root crop mixed farming systems zone that forms a belt over Nigeria that expands from East till West [@REFFS]. This zone is characterised by by XX and XX. [compare with other CZs and refer to table in Annex] [@Liverpool]. Hence, although our findings are not representative for total maize production in Nigeria, they can be considered for the main maize regions in the country. 
+
+Table x presents summary statistics for the climate zones that are located in the maize producing regions and Figure combines information from the LSMS-ISA and the GYGA (see annex X for the locations of the CZs). 
 
 ## Yield gaps 
 - calculate different yield gaps, also attainable yield gap and show differences

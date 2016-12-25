@@ -1,28 +1,29 @@
-#######################################
-#### CLEAN DATA PREPARE NGA PANEL #####
-#######################################
-#######################################
-############## PACKAGES ETC ###########
-#######################################
+#'========================================================================================================================================
+#' Project:  CIMMYT Yield gap
+#' Subject:  Analyse NGA yield gap
+#' Author:   Michiel van Dijk
+#' Contact:  michiel.vandijk@wur.nl
+#'========================================================================================================================================
 
-library(tidyverse)
-library(stargazer)
-library(broom)
-library(DescTools)
-library(xtable)
-library(frontier)
-library(moments)
-library(readxl)
-library(frontier)
-library(AER)
+### PACKAGES
+BasePackages<- c("tidyverse", "readxl", "stringr", "car", "scales", "RColorBrewer")
+lapply(BasePackages, library, character.only = TRUE)
+#SpatialPackages<-c("rgdal", "ggmap", "raster", "rasterVis", "rgeos", "sp", "mapproj", "maptools", "proj4", "gdalUtils")
+#lapply(SpatialPackages, library, character.only = TRUE)
+AdditionalPackages <- c("WDI", "stargazer", "frontier", "AER", "moments")
+lapply(AdditionalPackages, library, character.only = TRUE)
 
-wdPath <- "D:\\Data\\Github\\NGAYG"
+### SET WORKING DIRECTORY
+wdPath <- "~\\NGAYG"
 setwd(wdPath)
 
 dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData"
 
+# SOURCE 
 source("Code/winsor.r")
 source("Code/waterfall_plot.R")
+
+# OPTIONS
 options(scipen=999)
 
 #######################################
@@ -79,7 +80,7 @@ dbP <- dbP %>%
   filter(N_gps <= 700 & N_harv <= 700)
 
 db0 <- dbP %>% 
-  dplyr::select(hhid, plotid, ZONE, REGNAME, DISNAME, 
+  dplyr::select(hhid, plotid, ZONE, REGNAME, DISNAME, CLIMATEZONE, YW, fs,
                 SOC, SOC2, ph, ph2, 
                 rain_wq, 
                 slope, elevation,
@@ -131,7 +132,8 @@ db0$crop_count2[db0$crop_count>1] <- 0
 
 # additional variables
 db0 <- db0 %>% 
-              mutate ( logyld_harv = log(yld_harv),
+              mutate ( CLIMATEZONE = as.factor(CLIMATEZONE),
+                       logyld_harv = log(yld_harv),
                        logyld_gps = log(yld_gps),
                        yesN = ifelse(N_gps>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        noN = ifelse(N_gps<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
@@ -199,7 +201,12 @@ db0 <- db0 %>%
              #inter_crop_bar=mean(inter_crop, na.rm = TRUE),
              #ext_bar=mean(ext, na.rm = TRUE),
              crop_count_bar=mean(crop_count2, na.rm=TRUE))
-            
+
+# Select climate zones
+
+# targetZones <- c(9301, 9401,  9501,  9701,  9801,  9901, 10401)
+# db0 <- filter(db0, CLIMATEZONE %in% targetZones)            
+
 # drop unused levels
 db0 <- droplevels(db0)
 
@@ -233,7 +240,7 @@ olsCD1_harv <- lm(logyld_harv ~ noN + logN_harv + logasset + logae_harv +
                #inter_crop +
                slope + elevation +
                SOC2 + phdum2 + 
-               rain_wq + rain_wq2+
+               rain_wq + rain_wq2 +
                crop_count2 + surveyyear2,
              data = db1)
 
@@ -245,8 +252,8 @@ olsCD1_gps <- lm(logyld_gps ~ noN + logN_gps + logasset + logae_gps +
                     #inter_crop +
                     slope + elevation +
                     SOC2 + phdum2 + 
-                    rain_wq + rain_wq2+
-                    crop_count2 + surveyyear2,
+                    rain_wq + rain_wq2 +
+                   crop_count2 + surveyyear2,
                   data = db1)
 
 
@@ -255,7 +262,6 @@ stargazer(olsCD1_harv, olsCD1_gps, type="text")
 # Assess skewness of OLS - should be left skewed which is confirmed.
 hist( residuals(olsCD1_harv), 15)
 hist( residuals(olsCD1_gps), 15)
-library("moments")
 skewness(residuals(olsCD1_harv))
 skewness(residuals(olsCD1_gps))
 
@@ -289,7 +295,7 @@ sfaCD1_gps <- sfa(logyld_gps ~ noN + logN_gps +
                      slope + elevation +
                      SOC2 + phdum2 + 
                      rain_wq + rain_wq2+
-                     crop_count2 + surveyyear2,
+                     crop_count2 + surveyyear2,                  ,
                    data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 
 summary(sfaCD1_gps, extraPar = TRUE)
@@ -331,7 +337,7 @@ db2_sfaCD1_harv <- db1 %>% mutate(elastfert = coef(model)["logN_harv"],
 
 
 sumzone_sfaCD1_harv<- db2_sfaCD1_harv %>%
-  group_by(ZONE) %>%
+  group_by(CLIMATEZONE) %>%
   summarize(
     Ncon=mean(ifelse(N_harv>0, N_harv, NA), na.rm = T),
     N_harv=mean(N_harv, na.rm=T),
@@ -362,7 +368,7 @@ model <- sfaCD1_harv
 
 db3 <- db2_sfaCD1_harv %>%
   ungroup() %>%
-  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, area_harv, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_harv, ae, logasset, asset, elastfert, N_harv, Y=yld_harv, Npm) %>%
+  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, fs, YW, area_harv, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_harv, ae, logasset, asset, elastfert, N_harv, Y=yld_harv, Npm) %>%
   mutate(
     Ycor = exp(as.numeric(fitted(model))+log(as.numeric(efficiencies(model)))), 
     err = Ycor-Y,
@@ -413,17 +419,33 @@ db5 <- db4 %>%
       coef(model)["logasset"]*logasset*1.1 +
       elastfert*log(Npy)))
 
-# 4. PY: Potential yield
-# Merge Yield potential with maize plot database
-db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
-  mutate(PY=PY*1000) %>% left_join(db5,.)
+# 4. PY: Potential yield and HFY: Highest farmers yield
+# # Merge Yield potential with maize plot database
+# db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
+#   mutate(PY=PY*1000) %>% left_join(db5,.)
+# 
+# # A large number of plots have missing YW values because region is not covered by GYGA.
+# # We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
+# # Might scale this down to see the effect.
+# GYGA_YW <- max(GYGA$YW)*1000
+# db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
 
-# A large number of plots have missing YW values because region is not covered by GYGA.
-# We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
-# Might scale this down to see the effect.
-GYGA_YW <- max(GYGA$YW)*1000
-db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
+# Rename YW into PY and express in kg
+db6 <- db5 %>%
+  rename(PY = YW) %>%
+  mutate(PY = PY*1000) %>%
+  group_by(CLIMATEZONE) %>%
+  mutate(HFY90 = quantile(Y, probs = 0.9, na.rm = TRUE),
+         HFY95 = quantile(Y, probs = 0.95, na.rm = TRUE),
+         HFY100 = quantile(Y, probs = 1, na.rm = TRUE))
 
+check <- db5 %>%
+  ungroup() %>%
+  filter(CLIMATEZONE == "9901") %>%
+  mutate(max = quantile(Y, probs = 0.90, na.rm = TRUE))
+
+mean(check$Y)
+quantile(check$Y, probs = 0.90, na.rm = TRUE)
 
 #####################################################
 ### Yield levels consistency check and correction ###
@@ -531,8 +553,9 @@ summary(X_overall)
 
 
 # Create database with relevant variables for further analysis
-db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon, crop_count2, area_harv, yesN, Y, N_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
-                     EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
+db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, fs, lat, lon, crop_count2, area_harv, yesN, Y, N_harv,
+                          Ycor, TEY, EY, PFY, HFY90, HFY95, HFY100, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
+                          EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
 
 # Clean up
 rm(list =grep("X_", ls(), value = TRUE)) # remove checks
@@ -577,7 +600,7 @@ db2_sfaCD1_gps <- db1 %>% mutate(elastfert = coef(model)["logN_gps"],
 
 
 sumzone_sfaCD1_gps<- db2_sfaCD1_gps %>%
-  group_by(ZONE) %>%
+  group_by(CLIMATEZONE) %>%
   summarize(
     Ncon=mean(ifelse(N_gps>0, N_gps, NA), na.rm = T),
     N_gps=mean(N_gps, na.rm=T),
@@ -608,7 +631,7 @@ model <- sfaCD1_gps
 
 db3 <- db2_sfaCD1_gps %>%
   ungroup() %>%
-  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, area_gps, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_gps, ae, logasset, asset, elastfert, N_gps, Y=yld_gps, Npm) %>%
+  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, YW, area_gps, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_gps, ae, logasset, asset, elastfert, N_gps, Y=yld_gps, Npm) %>%
   mutate(
     Ycor = exp(as.numeric(fitted(model))+log(as.numeric(efficiencies(model)))), 
     err = Ycor-Y,
@@ -661,15 +684,21 @@ db5 <- db4 %>%
 # 4. PY: Potential yield
 # Merge Yield potential with maize plot database
 # Merge Yield potential with maize plot database
-db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
-  mutate(PY=PY*1000) %>% left_join(db5,.)
+# db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
+#   mutate(PY=PY*1000) %>% left_join(db5,.)
+# 
+# # A large number of plots have missing YW values because region is not covered by GYGA.
+# # We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
+# # Might scale this down to see the effect.
+# GYGA_YW <- max(GYGA$YW)*1000
+# db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
 
-# A large number of plots have missing YW values because region is not covered by GYGA.
-# We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
-# Might scale this down to see the effect.
-GYGA_YW <- max(GYGA$YW)*1000
-db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
-
+# Rename YW into PY and express in kg
+db6 <- db5 %>%
+  rename(PY = YW) %>%
+  mutate(PY = PY*1000) %>%
+  group_by(CLIMATEZONE) %>%
+  mutate(HFY = quantile(Ycor, probs = 0.9))
 
 #####################################################
 ### Yield levels consistency check and correction ###
@@ -777,7 +806,7 @@ summary(X_overall)
 
 
 # Create database with relevant variables for further analysis
-db9_gps <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon, crop_count2, area_gps, yesN, Y, N_gps, Ycor, TEY, EY, PFY, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
+db9_gps <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon, crop_count2, area_gps, yesN, Y, N_gps, Ycor, TEY, EY, PFY, HFY, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
                      EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
 
 # Clean up

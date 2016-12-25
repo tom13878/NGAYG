@@ -10,8 +10,8 @@ BasePackages<- c("tidyverse", "readxl", "stringr", "car", "scales", "RColorBrewe
 lapply(BasePackages, library, character.only = TRUE)
 #SpatialPackages<-c("rgdal", "ggmap", "raster", "rasterVis", "rgeos", "sp", "mapproj", "maptools", "proj4", "gdalUtils")
 #lapply(SpatialPackages, library, character.only = TRUE)
-#AdditionalPackages <- c("WDI", "countrycode)
-#lapply(AdditionalPackages, library, character.only = TRUE)
+AdditionalPackages <- c("WDI", "countrycode", "cowplot")
+lapply(AdditionalPackages, library, character.only = TRUE)
 
 ### DETERMINE ROOT DIRECTORY
 root <- find_root(is_rstudio_project)
@@ -33,48 +33,202 @@ db9_harv <- readRDS(file.path(root, "Cache/db9_harv.rds"))
 #source("Code/waterfall_plot.R")
 source(file.path(root, "Code/sfaTable.R"))
 
-### PRICES
-# Plot
-Prices_fig <- db1 %>% 
+### DEFINE TARGET CLIMATEZONES
+# Select target zones as CLIMATEZONES > 50 plot observations
+CZ_target <- db9_harv %>%
   ungroup() %>%
-  dplyr::select(hhid, plotid, ZONE, Pc, Pn, surveyyear) %>%
-  gather(variable, value, -ZONE, -surveyyear, -hhid, -plotid) %>%
-  group_by(hhid, plotid, ZONE, variable) %>%
-  summarize(value = mean(value, na.rm=T)) %>%
-  mutate(variable = ifelse(variable == "Pc", "Maize", "Nitrogen"))
+  dplyr::select(CLIMATEZONE, hhid, plotid) %>%
+  group_by(CLIMATEZONE) %>%
+  summarise(NumberHH = length(unique(hhid)),
+            Numberplot = n())
+CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot > 50] 
+CZ_target <- droplevels(CZ_target)
 
-Fig_price = ggplot(data = as.data.frame(Prices_fig), aes(x = factor(ZONE), y = value)) +
-  geom_boxplot(outlier.colour = NA, aes(fill = factor(variable))) +
+
+### PRICES
+# Plot for maize
+Prices_maize <- db1 %>%
+  ungroup() %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  dplyr::select(hhid, plotid, CLIMATEZONE, Pc)
+
+Fig_price_maize = ggplot(data = as.data.frame(Prices_maize), aes(x = CLIMATEZONE, y = Pc)) +
+  geom_boxplot(outlier.colour = NA, fill = "red") +
   stat_boxplot(geom ='errorbar') +
   labs(x = "", 
-       y = "Price (XX Naira/ton)") +
+       y = "Price (XX Naira/ton)",
+       title = "Maize price") +
   guides(fill = F) +
-  facet_wrap(~variable, scale = "free") +
-  theme_bw()
+  coord_cartesian(ylim=c(0, 100)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) # To centre title
 
+
+Fig_price_maize
+
+Prices_nit <- db1 %>%
+  ungroup() %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  dplyr::select(hhid, plotid, CLIMATEZONE, Pn)
+
+Fig_price_nit = ggplot(data = as.data.frame(Prices_nit), aes(x = CLIMATEZONE, y = Pn)) +
+  geom_boxplot(outlier.colour = NA, fill = "blue") +
+  stat_boxplot(geom ='errorbar') +
+  labs(x = "", 
+       y = "",
+       title = "Nitrogen price") +
+  guides(fill = F) +
+  coord_cartesian(ylim=c(0, 550)) +
+  scale_y_continuous(breaks=seq(0, 550, 100)) +
+  theme_classic() +
+  theme(plot.title = element_text(hjust = 0.5)) # To centre title
+
+Fig_price_nit
+
+Fig_price = plot_grid(Fig_price_maize, Fig_price_nit)
 Fig_price
 
+
 ### YIELD COMPARISON
-yield_comp <- db1 %>%
-  dplyr::select(hhid, plotid, yld_harv, yld_gps, yld_harv_farmer, yld_farmer, ZONE, crop_count2) %>%
-  gather(variable, value, -hhid, -plotid, -ZONE, -crop_count2) 
+yield_comp <- db9_harv %>%
+  ungroup() %>%
+  dplyr::select(hhid, plotid, Y, Ycor, TEY, EY, PFY, PY, HFY90, HFY95, HFY100, CLIMATEZONE, surveyyear) %>%
+  gather(yield, value, -hhid, -plotid, -CLIMATEZONE, -surveyyear) %>%
+  #filter(CLIMATEZONE == "9901", yield == "Y") %>%
+  mutate(yield = factor(yield, 
+                levels = c("Y", "Ycor", "TEY", "EY", "HFY90", "HFY95", "HFY100", "PFY", "PY"))) %>%
+  group_by(CLIMATEZONE, yield) %>%
+  summarize(n = n(),
+            max = quantile(value, probs = 0.90, na.rm = TRUE),
+            min = quantile(value, probs = 0.10, na.rm = TRUE),
+            sd = sd(value, na.rm = TRUE),
+            se = sd/sqrt(n),  # Calculate standard error of the mean
+            mean = mean(value, na.rm = T)) %>%
+  filter(n >50, !(yield %in% c("Ycor", "HFY95", "HFY100")))
+  
+#   
+#   dplyr::select(hhid, plotid, yld_harv, yld_gps, yld_harv_farmer, yld_farmer, ZONE, crop_count2) %>%
+#   gather(variable, value, -hhid, -plotid, -ZONE, -crop_count2) 
+# 
+# pure_yield <- filter(yield_comp, crop_count2 == 1)  %>%
+#   mutate(variable = ifelse(variable == "yld_harv", "yld_harv_pure", "yld_gps_pure"))
+# 
+# yield_comp = bind_rows(yield_comp, pure_yield)
 
-pure_yield <- filter(yield_comp, crop_count2 == 1)  %>%
-  mutate(variable = ifelse(variable == "yld_harv", "yld_harv_pure", "yld_gps_pure"))
+df <- filter(yield_comp, CLIMATEZONE %in% targetZones, yield %in% c("Y", "TEY", "EY", "PFY"))
+p = ggplot(data = df, aes(x = yield, y=value)) + 
+  geom_boxplot(outlier.shape=NA, aes(fill = yield)) + 
+  facet_wrap(~CLIMATEZONE, scale = "free")
+p
++ 
+  geom_bar(stat="identity", colour = "black", aes(fill = yield)) +
+  #geom_errorbar(aes(ymax = mean + sd, ymin = mean - sd), width = 0.25) +
+  geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
+  #geom_errorbar(aes(ymax = mean + 1.96*se, ymin = mean - 1.96*se), width = 0.25) +
+  facet_wrap(~CLIMATEZONE, scale = "free")
+p
 
-yield_comp = bind_rows(yield_comp, pure_yield)
+p = ggplot(data = yield_comp, aes(x = yield, y=mean)) + 
+  #geom_boxplot(outlier.shape=NA) + 
+  geom_bar(stat="identity", colour = "black", aes(fill = yield)) +
+  #geom_errorbar(aes(ymax = mean + sd, ymin = mean - sd), width = 0.25) +
+  geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
+  #geom_errorbar(aes(ymax = mean + 1.96*se, ymin = mean - 1.96*se), width = 0.25) +
+  facet_wrap(~CLIMATEZONE, scale = "free") +
+  theme_bw()
+p
 
-p = ggplot(data = yield_comp, aes(x = variable, y=value)) + 
-  geom_boxplot(outlier.shape=NA) + 
-  facet_wrap(~ZONE)
+p = ggplot(data = yield_comp, aes(x = factor(CLIMATEZONE), y = mean)) + 
+  geom_bar(aes(fill = yield), stat='identity')
+
+p
++
+  #geom_errorbar(aes(ymax = mean + sd, ymin = mean - sd), width = 0.25) +
+  geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
+  #geom_errorbar(aes(ymax = mean + 1.96*se, ymin = mean - 1.96*se), width = 0.25) +
+  facet_wrap(~CLIMATEZONE, scale = "free")
+
+geom_bar(aes(fill = drv))
 sts <- boxplot.stats(yield_comp$value)$stats
 p1 = p + coord_cartesian(ylim = c(sts[2]/2,max(sts)*1.2)) 
-p1
+p
+IQR(db9_harv$Y, na.rm=T)
 
 yield_comp2 <- yield_comp %>%
   group_by(variable, ZONE) %>%
   mutate(value = winsor2(value)) %>%
   summarize(value = mean(value, na.rm=TRUE))
+
+
+### SHARE OF YIELD GAPS
+
+Tbl_YG <- bind_rows(
+  db9_harv %>%
+  ungroup() %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  dplyr::select(hhid, plotid, area_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+  group_by(CLIMATEZONE) %>%
+  summarize(ERROR_l =(sum((ERROR_l)*area_harv)/sum(area_harv)),
+              TEYG_l = (sum((TEYG_l)*area_harv)/sum(area_harv)),
+              EYG_l = (sum((EYG_l)*area_harv)/sum(area_harv)),
+              EUYG_l = (sum((EUYG_l)*area_harv)/sum(area_harv)),
+              TYG_l = (sum((TYG_l)*area_harv)/sum(area_harv)),
+              YG_l = (sum((YG_l)*area_harv)/sum(area_harv)),
+              YG_l_Ycor = (sum((YG_l_Ycor)*area_harv)/sum(area_harv)),
+              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l)),
+  db9_harv %>% 
+  ungroup() %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  dplyr::select(hhid, plotid, area_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+  summarize(CLIMATEZONE = "Total", 
+            ERROR_l =(sum((ERROR_l)*area_harv)/sum(area_harv)),
+            TEYG_l = (sum((TEYG_l)*area_harv)/sum(area_harv)),
+            EYG_l = (sum((EYG_l)*area_harv)/sum(area_harv)),
+            EUYG_l = (sum((EUYG_l)*area_harv)/sum(area_harv)),
+            TYG_l = (sum((TYG_l)*area_harv)/sum(area_harv)),
+            YG_l = (sum((YG_l)*area_harv)/sum(area_harv)),
+            YG_l_Ycor = (sum((YG_l_Ycor)*area_harv)/sum(area_harv)),
+            YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l))) %>%
+  dplyr::select(-ERROR_l,-YG_l, -YG_lcheck)
+
+Tbl_YG_sh <- Tbl_YG %>%
+  mutate(
+    TEYG = 100*TEYG_l/YG_l_Ycor,
+    EYG = 100*EYG_l/YG_l_Ycor,
+    EUYG = 100*EUYG_l/YG_l_Ycor,
+    TYG = 100*TYG_l/YG_l_Ycor,
+    YG = 100*(TEYG_l + EYG_l + EUYG_l + TYG_l)/YG_l_Ycor) %>%
+  dplyr::select(-TEYG_l:-YG_l_Ycor) 
+
+
+yield_comp <- db9_harv %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  ungroup() %>%
+  dplyr::select(hhid, plotid, Y, TEY, EY, PFY, CLIMATEZONE, surveyyear) %>%
+  gather(variable, value, -hhid, -plotid, -CLIMATEZONE, -surveyyear) %>%
+  group_by(CLIMATEZONE, variable) %>%
+  summarize(value = mean(value, na.rm = T)) 
+
+ggplot(yield_comp, aes(x = CLIMATEZONE, y = value, fill = variable)) + 
+  geom_bar(position = "fill",stat = "identity") + 
+  scale_y_continuous(labels = percent_format())
+
+### SCATTERPLOT OF YIELD PER CLIMATE ZONE
+df <- db9_harv %>%
+  filter(CLIMATEZONE %in% CZ_target) %>%
+  dplyr::select(hhid, plotid, Y, TEY, EY, PFY, N_harv, CLIMATEZONE, surveyyear) %>%
+  gather(variable, value, - N_harv, -hhid, -plotid, -CLIMATEZONE, -surveyyear) %>%
+  filter(N_harv>0, variable %in% c("Y"))
+
+ggplot() +
+  geom_point(data = df, aes(x = N_harv, y = value, colour = variable, shape = variable)) +
+  facet_wrap(~ CLIMATEZONE, scales = "free")
+
+ggplot(data = df, aes(x = N_harv, y = value, colour = variable, shape = variable)) +
+  filter(Y >0) +
+  geom_point() +
+  stat_smooth()
+  
 
 # SPAM Data 
 SPAMData <- read.csv("Cache/SPAMData_NGA.csv") %>%
