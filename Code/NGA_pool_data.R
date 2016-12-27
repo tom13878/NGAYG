@@ -6,8 +6,8 @@
 ############## READ THE DATA ###############
 ############################################
 
-source("D:\\Data\\Github\\NGAYG\\Code\\NGA_2010.r")
-source("D:\\Data\\Github\\NGAYG\\Code\\NGA_2012.r")
+source("~\\NGAYG\\Code\\NGA_2010.r")
+source("~\\NGAYG\\Code\\NGA_2012.r")
 
 #######################################
 ############## PACKAGES ETC ###########
