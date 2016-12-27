@@ -18,6 +18,7 @@ root <- find_root(is_rstudio_project)
 
 ### DATAPATH
 dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData"
+dataPath <- "/Users/MMHOME/OneDrive - IIASA/SurveyData"
 
 ### R SETTINGS
 options(scipen=999) # surpress scientific notation
