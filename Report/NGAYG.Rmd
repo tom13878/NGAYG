@@ -5,13 +5,22 @@ date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
   word_document:
     reference_docx: ../Common//word_styles_01.docx
-    fig_caption: true
 bibliography: ../common/NGAYG.bib
 ---
 
 ```{r setup, include=FALSE}
+library(rprojroot)
+root <- find_root(is_rstudio_project)
+
 library(knitr)
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  fig.width=12, fig.height=8,
+  dpi = 300,
+  echo=FALSE, warning=FALSE, message=FALSE,
+  fig.path = file.path(root,"FigTabMap/out-"),
+  dev = "CairoPNG",
+  dev.args = list(CairoPNG = list(bg = "transparent"))
+  )
 
 library(pander)
 panderOptions('table.alignment.default', function(df)
@@ -20,13 +29,9 @@ panderOptions('table.split.table', Inf)
 panderOptions('big.mark', ",")
 panderOptions('keep.trailing.zeros', TRUE)
 
-library(rprojroot)
-root <- find_root(is_rstudio_project)
-knitr::opts_chunk$set(echo = FALSE, fig.height = 10, fig.width = 10)
-
-source(file.path(root ,"Code/NGA_fig.R"))
-source(file.path(root ,"Code/NGA_tbl.R"))
-source(file.path(root ,"Code/NGA_map.R"))
+source(file.path(root, "Code/NGA_fig.R"))
+source(file.path(root, "Code/NGA_tab.R"))
+source(file.path(root, "Code/NGA_map.R"))
 ```
 
 # Introduction
@@ -67,15 +72,15 @@ Actual yield is typically expressed in kilograms or tons per hectare and measure
 
 
 ## Conceptual framework
-Figure ? depicts our conceptual framework to illustrate and disentangle the various yield levels that are used in the literature. It shows the observed input and output combinations of a number of agricultural units (e.g. field, farm or region). For purpose of illustration, we assume that the observations are small-scale farms in Africa, who produce a single output (e.g. maize) using one input (e.g fertilizer), agroecological conditions are identical for all farms and water is not limited. The _theoretical yield response function_ describes the relationship between yield and inputs under perfect crop management and most advanced technology. The maximum of the function is the potential yield level. The _frontier yield response function_ is estimated using actual observations from a sample of farmers or plots in a specific country or region. It measures best-practice performance at all input levels and reflects the best management practices and technology that are available in the region. The diagonal line presents the relative input ($w$) and output ($p$) market price faced by the farmers. 
+We use the conceptual framework developed by @Vandijk2016 to decompose the conventional yield gap. Figure 1 shows the observed input and output combinations of a number of agricultural units (e.g. field, farm or region). For purpose of illustration, we assume that the observations are small-scale farms in Africa, who produce a single output (e.g. maize) using one input (e.g fertilizer), agroecological conditions are identical for all farms and water is not limited. The _theoretical yield response function_ describes the relationship between yield and inputs under perfect crop management and most advanced technology. The maximum of the function is the potential yield level. The _frontier yield response function_ is estimated using actual observations from a sample of farmers or plots in a specific country or region. It measures best-practice performance at all input levels and reflects the best management practices and technology that are available in the region. The diagonal line presents the relative input ($w$) and output ($p$) market price faced by the farmers. 
 
-Figure X depicts the two yield levels that determine the conventional yield gap, actual yield ($Y_a$) for farm $F_1$ and potential yield ($Y_p$) as well as the associated input levels. Similar to @Tittonell2013, we argue that the yield gap is caused by two main factors. The first is resource use intensity. The relationship between resource use and yield is given by the yield response curve. Intensification will results in higher yields, represented by a movement over the curve to the right. We argue that for the majority of farmers the decision on how much inputs to use depends on economic considerations (i.e. profit maximization behavior). Under the assumption of perfect functioning agricultural markets and full information, the demand for inputs will solely depend on relative market prices of inputs and output, and production technology [@Sadoulet1995]. In developing countries, the assumption of perfect markets is not realistic because of high transaction cost, missing credit and insurance markets and lack of information on input and output prices and available technologies [@Stiglitz1989; @Dillon2014]. Under these circumstances, the demand for inputs tends to be lower than the economic optimum resulting in lower output and yield [@Kelly2003]. In some cases, farmers the input decision of farmers can be guided by other non-economic objectives such as environmental awareness or output targets [Ref to RUE Rabbinge? - Example] resulting in sub optimal economic input use.  
+Figure 1 depicts the two yield levels that determine the conventional yield gap, actual yield ($Y_a$) for farm $F_1$ and potential yield ($Y_p$) as well as the associated input levels. Similar to @Tittonell2013, we argue that the yield gap is caused by two main factors. The first is resource use intensity. The relationship between resource use and yield is given by the yield response curve. Intensification will results in higher yields, represented by a movement over the curve to the right. We argue that for the majority of farmers the decision on how much inputs to use depends on economic considerations (i.e. profit maximization behavior). Under the assumption of perfect functioning agricultural markets and full information, the demand for inputs will solely depend on relative market prices of inputs and output, and production technology [@Sadoulet1995]. In developing countries, the assumption of perfect markets is not realistic because of high transaction cost, missing credit and insurance markets and lack of information on input and output prices and available technologies [@Stiglitz1989; @Dillon2014]. Under these circumstances, the demand for inputs tends to be lower than the economic optimum resulting in lower output and yield [@Kelly2003]. In some cases, farmers the input decision of farmers can be guided by other non-economic objectives such as environmental awareness or output targets [Ref to RUE Rabbinge? - Example] resulting in sub optimal economic input use.  
 
 The second major cause of yield gaps is related to the efficient use and adoption of technology. Two different aspects are relevant. The first is technical efficiency, which is defined as the farm’s ability to produce maximum output given a set of inputs and technology [@Farrell1957a; @Coelli2005]. Best-practice farmers, who are located on the yield response frontier, are considered technically efficient. Farmers below the frontier are considered inefficient because they have a lower yield despite using the same level of inputs and experience the same agroecological conditions. Technical inefficiency implies that crop management is sub optimal, referring to differences in planting dates, spacing, weeding and form of the inputs applied, which, in turn can be related differences in experience and practices, and access to extension services [see @Bravo-Ureta2007; @Ogundari2014 for reviews].
 
 The second technology aspect is the adoption of advanced technologies. As has been pointed out by @Tittonell2013 most small-scale farmers are subsistence farmers with limited access to appropriate technologies. Even if resource availability would not be a problem and farmers would produce at best-practice level, there would still be a gap with the potential yield level. Closing this gap would require the use of advanced technologies such as precision agriculture, advanced crop management and the adoption of the latest varieties (hybrid seeds). The adoption of advanced technologies will help farmers to increase their yield to a level that previously not could be attained. The effect is an upward shift of the frontier yield response curve in the direction of the theoretical yield response curve and a reduction of the yield gap.
 
-Figure X depicts the three yield levels that can be derived on the basis of the economic, technical efficiency and technology constraints discussed above: 
+Figure 1 depicts the three yield levels that can be derived on the basis of the economic, technical efficiency and technology constraints discussed above: 
 
 - _Technical efficiency yield_ measures best-practice performance for a field, farm or region at each input level and reflects the available technology and best management practices in the sample.
 
@@ -87,91 +92,81 @@ The figure also depicts the _highest farmers' yield_ (for convenience measured a
 
 **Figure 1: Conceptual framework**
 
-```{r Fig_YGF}
-knitr::include_graphics("../FigTab/Fig_YG_fw.png")
-#knitr::include_graphics(file.path(root, "FigTab/Yield_Gap_Framework.png")) Does not work for some reason..
+```{r Figure-1}
+knitr::include_graphics("../FigTabMap/Fig_YG_fw.png")
+#knitr::include_graphics(file.path(root, "FigTabMap/Yield_Gap_Framework.png")) Does not work for some reason..
 ```
- 
-## Yield gaps
+
+##### Source: 
+
 The total yield gap ($Yg$) can be decomposed in four parts: the technical efficiency yield gap ($TEYg$), the economic yield gap ($EYg$), the feasible yield gap ($FYg$) and the technology yield gap ($Tg$) [@VanDijk2016]. The sum of the economic yield gap and the feasible yield gap has been referred to as the resource yield gap ($Rg$) [@Silva2016]. Table 1 summarizes the definitions and potential causes for the the six yield gaps that can be derived from Figure 1. 
 
 Global studies of yield gaps clearly show that the (total) yield gap is highest in sub-Saharan countries like Nigeria [@Mueller2012; @Licker2010; @Neumann2010]. The decomposition of the yield gap provides a deeper understanding for this finding and its causes. Knowledge constraints (e.g. access to extension services) result in technical efficiency yield gaps while pervasive market failures that characterize (agricultural) input and output markets in many sub-Saharan countries will lead to economic yield gaps. Similarly , we expect a large feasible yield gap because of the unfavorable balance between input and output prices in sub-Saharan countries. This is underscored by the high fertilizer price in many sub-Saharan countries caused poor dealer networks, high transportation costs and small market size [@Morris2007]. Finally, the technology yield gap is also expected to be large. [ADD evidence technology use in Africa]. The existence of (agricultural) technology gaps between rich and poor countries has been studied widely [@Fagerberg1994, @Mekonnen2015, @Headey2010a] and can been related to the combination of broader institutional, technological, economic and social factors.
 
-##### PAGE BREAK
+###### PAGE BREAK
 
-```{r Tbl_YG}
+**Table 1: Yield gaps**
+
+```{r Table 1}
 library(readr)
 library(knitr)
-Tbl_YG <- read_csv(file.path(root, "FigTab/Tbl_YG.csv"))
-kable(Tbl_YG, caption = "Table 1: Yield gaps")
+Tbl_YG <- read_csv(file.path(root, "FigTabMap/Tbl_YG.csv"))
+kable(Tbl_YG)
 ```
 
-##### PAGE BREAK
+##### Source: 
 
-## The definition and measurement of acual yield
-Most attention in the literature on yield gaps has been devoted to the definition and measurement of potential yield, while that of actual yield has received relative limited attention (e.g. in recent reviews on yield gap approaches and data requirements for yield gap analysis [@VanIttersum2013, @Grassini2015a], the definition of area is not addressed at all). It is evident that the measurement of the two components of actual yield - quantity harvested and area - have significant impact on estimations of actual yield and the yield gap. Although, the measurement of both components is fraught with difficulties [@Fermont2011; @Reynolds], we fill focus here only on the measurement of area for which we have the data to compare a variety of definitions. 
-
-Two potential problems are relevant. The first is a question about which definition to use for area. It is common practice in the yield gap literature to follow the FAO definition and use harvested area to calculate actual yield [@Fischer2015]. Nonetheless, in a recent study @Reynolds argue that this definition leads to serious overestimation of actual yield because it ignores crop losses that might occur between planting and harvesting and a definition of actual yield relative to planted area is recommended. 
-
-Causes for the difference in area planted and area harvested include crop management factors (e.g. poor germination, damage from pests and diseases) and economic constraints (e.g. labor and capital constraints and shortage of market opportunities). These are exactly the same factors that one tries to grasp when doing yield gap analysis. Crop management and resource use decisions by farmers will be based on total plot area that is considered for agricultural production, not only the harvested area. Yield gap assessments using a definition based on harvested areas therefore will only capture a part of the yield gap.  
-
-The second is a measurement problem and deals with how to measure area (planted and harvested) in the best way. It has been shown that farmer self-assessed area is characterized by systematic errors and therefore GPS measurements are recommended [@Carletto2015a]. This is also underscored by the latest generation of (large-scale) household surveys, such as the LSMS-ISA that is used in this paper and the DHS, in which GPS measures are part of the standard protocol. Similarly, there are several initiatives that support the crowd-sourcing of plot size area using GPS to strenghten the property rights of farmers.  Exact (GPS) measures of harvest area are often not available because this will tend to change every year. A potential disadvantage of using GPS measures is that they often measure the total size of the plot or field, which may contain more than one crop because of multi-cropping or inter-cropping. This will likely result in an underestimation when compared to plots where all planted area is used for a single crop only.
-
-```{r yield_comp}
-# Add number of observations on in plot
-```
-
-
-
-```{r}
-#Large differences between official crop yield statistics and independent yield surveys have been reported for African countries (see Van oort[2016 p. 3 for #references, also include Gollin paper and @Grassini 2015, who compare sources.]). Also see Sadras p 12.
-#In practice, very difficult to measure harvested area, when data is derived from farm-level surveys. As will be demonstrated below for the case of Nigeria, #farmers 
-#and also ignores the possibility that farmers might lose crop area between planting and harvest (e.g., partial crop failure). Drawing
-```
+CHECK We also estimate highest farmers' yield to assess if it is close to any of the theoretical yield levels. A major problem with using highest farmers' yield in ##is dealing with the variation in agroecological conditions across the sample. In large samples such as the LSMS-ISA for Nigeria that cover plots in all #parts of the country, potential yield in the XXX zones much lower than that of farmers in XX zones [Figure X]. Simply taking the average yield of the top 95 #percentile of the complete sample will results in a highly biased benchmark. To only way to overcome this issue would be to take averages per agroecological #zone [@mann]. However, it seems that this is not done in most studies [CHECK].
 
 
 
 
 # Data
-
-## Farm and plot level data
-The data for this report come from the nationally representative 2010-11 and 2012-13 waves of the  Nigeria General Household Survey (GHS). In total the GHS is a cross section of 22,000 households, 5,000 of which were included as panel households forming the GHS-panel. A relatively low rate of attrition was recorded between the two waves amounting to a 96% successful follow up rate across all households and 97% among only rural households. The focus of the GHS is to improve the quality of data on the agricultural sector and was conducted by the National Bureau of Statistics in partnership with the Federal Ministry of Agriculture and Rural Development (FMA&RD), the National Food Reserve Agency (NFRA), the Bill and Melinda Gates Foundation (BMGF) and the World Bank (WB). In each wave, households were visited twice reflecting the post planting and post harvest visits. In addition to agricultural activities, a broad range of topics including agricultural production, consumption, health and a number of socio-economic characteristics were recorded. The data was collected at several levels, including at the plot, household and enumeration area level, and the location of each household was GPS recorded with an offset to preserve household anonymity.
-
-We approach the study of smallholder maize productivity from the perspective of narrowing the yield gap by identifying the role of nitrogen application rates on maize yields. The agricultural questionnaire of the GHS records key information at the plot level including the quantity of maize harvested, the quantity of fertilizer applied and the area of the plot. From this information maize yield, and nitrogen application rates can be calculated. Plot area measurements were recorded by GPS in each wave, and where it was not possible to record the GPS area, for example due to cloudy weather, the World Bank provides a complete set of plot areas with imputed missing values. Another aspect of this study is the extent to which nitrogen application rates reflect economically meaningful decisions. This is informed by the relative price of maize and nitrogen, both of which can be derived from the GHS survey. As some price measurements clearly fell outwith an acceptable or plausible range, the prices of both maize and nitrogen were winsored to remove values that were more than three standard deviations from the median _(probably should be done per region??)_. A subsidy program did exist in Nigeria over the course of this survey. However, farmers were not asked whether they received these subsidies for the fertilizer they purchased which may also have consequences for the analysis ... 
-
-Maize yields may also depend on factors including the amount of labour on a plot, or farmer characteristics. In addition the biophysical role of nitrogen on maize can also depend on soil, seed type  and climate conditions, for example the carbon content of the soil (Barrett). To some extent this information is included in the GHS and the spatial and climate data that accompanies the main survey. In this report we go further by using the GPS recorded household locations to combine the GHS with external data with a finer resolution than currently provided with the GHS survey. We therefore have more accurate information on key variables to improve the analysis of the maize yield gap and the role of nitrogen application.    
-
-## Input and output price information
- Transport costs
-
-```{Fig_pricies}
-Fig_prices
-```
-
-
-
-## Climate and soil variables
-
+For the integrated analysis in this study we combine agronomic and economic information from several sources. The following section describes the various data sources and presents summary statistics for relevant variables.
 
 ## Potential yield estimations
+We take 
 
-```{r GYGA}
+**Figure 2: Yield gap and LSMS**
+
+```{r Figure-2}
 GYGA_LSMS
-
-#We also estimate highest farmers' yield to assess if it is close to any of the theoretical yield levels. A major problem with using highest farmers' yield in ##is dealing with the variation in agroecological conditions across the sample. In large samples such as the LSMS-ISA for Nigeria that cover plots in all #parts of the country, potential yield in the XXX zones much lower than that of farmers in XX zones [Figure X]. Simply taking the average yield of the top 95 #percentile of the complete sample will results in a highly biased benchmark. To only way to overcome this issue would be to take averages per agroecological #zone [@mann]. However, it seems that this is not done in most studies [CHECK].
-
 ```
+
+##### Source: LMSS
+
+
+## Farm and plot level data
+The plot and farm level data for this study come from the nationally representative 2010-11 and 2012-13 waves of the  Nigeria General Household Survey (GHS). In total the GHS is a cross section of 22,000 households, 5,000 of which were included as panel households forming the GHS-panel. The focus of the GHS is to improve the quality of data on the agricultural sector and was conducted by the National Bureau of Statistics in partnership with the Federal Ministry of Agriculture and Rural Development (FMA&RD), the National Food Reserve Agency (NFRA), the Bill and Melinda Gates Foundation (BMGF) and the World Bank (WB). In each wave, households were visited twice reflecting the post planting and post harvest visits. The data was collected at several levels, including at the plot, household and enumeration area level, and the location of each household was GPS recorded with an offset to preserve household anonymity.
+
+The agricultural questionnaire of the GHS records key information at the plot level including the quantity of crop harvested, the quantity of fertilizer and seeds applied and the area of the plot. Plot area measurements were recorded by GPS in each wave, and where it was not possible to record the GPS area, for example due to cloudy weather, the World Bank provides a complete set of plot areas with imputed missing values. [@ADD on GPS vs harvested area]. From this information maize yield, and nitrogen application rates can be calculated. As some yield and nitrogen measurements clearly fell outside a plausible range, we followed the approach of other studies that use similar plot and farm level surves [@REF] and restricted the size of the plot to XX and XX hectares, and the use of Nitrogen to 700 kg per hectare, the maximum use in the United States [@ADD]. Maize yields may also depend on factors including the amount of labour on a plot, the use of farm machinery [@check antrac def] and other farm capital, which is also provided by the GHS.
+
+## Input and output price information
+A key aspect of this study is to investigate the economic constraints to closing the yield gap, which is influenced by the relative price of maize and inputs (in this case nitrogen). The GHS presents detailed information on the value and quantity of maize sold and fertilizer purchased at the plot level. We use this information to calculate plot level prices.  We winsored the prices of both maize and nitrogen to remove values that were more than three standard deviations from the median per climate zone. 
 
 Figure X shows the distribution of maize and nitrogen prices per zone in Nigeria. It demonstrates that prices vary considerably within and between geographical locations. In the Northern zones, the __interquartile?__ range lies between X and X Niara, while in the Southern zones prices are on average lower. Nitrogen prices also vary across Nigeria but exhibit a similar average that around XX Naira. It 
 
+**Figure 3: Maize and Nitrogen prices**
 
-```{r Tbl_sumstat}
-# library(psych)
-# kable(describe(dbsum), 
-#       format='markdown', 
-#       caption="Descriptive statistics",
-#       digits=2)
+```{r Figure-3}
+Fig_price
 ```
+
+##### Source: LSMS-ISA and GYGA 
+
+[@ADD Transport costs]
+
+**Table 2: Descriptive statistics per climate zone**
+
+```{r Table-2}
+pander(CZ_tbl, digits = c(2))
+```
+
+##### Source: LSMS-ISA and GYGA 
+
+
+## Climate and soil variables
+In addition the biophysical role of nitrogen on maize can also depend on soil, seed type  and climate conditions, for example the carbon content of the soil (Barrett). To some extent this information is included in the GHS and the spatial and climate data that accompanies the main survey. In this report we go further by using the GPS recorded household locations to combine the GHS with external data with a finer resolution than currently provided with the GHS survey. We therefore have more accurate information on key variables to improve the analysis of the maize yield gap and the role of nitrogen application.    
 
 # Estimation of yield levels
 ## Technical efficiency yield
@@ -190,9 +185,13 @@ where $Z$ are growth defining factors, including. $z$ are growth limiting factor
 # Results
 ## Frontier yield response estimation
 
-````{r Tbl_sfa}
+**Table 3: Frontier yield response curve estimation**
+
+````{r Table-3}
 pander(Tbl_sfa)
 ```
+
+##### Note: 
 
 # CLIMATE ZONES
 To calculate potential yield, the GYGA identifies climate zones, which have similar biophysical conditions [@VanBussum]. There are in total XX Climate zones in Nigeria. Climate zones are defined by their XX number.
@@ -201,7 +200,27 @@ In this study we focus on the main maize producing area in Nigeria for which we 
 
 Table x presents summary statistics for the climate zones that are located in the maize producing regions and Figure combines information from the LSMS-ISA and the GYGA (see annex X for the locations of the CZs). 
 
-## Yield gaps 
+## Yield levels
+
+**Figure 4: Yield levels**
+
+```{r Figure-4}
+Fig_YL
+```
+
+##### Source: 
+
+
+**Table 4: Frontier yield response curve estimation**
+
+```{r Table-4}
+pander(Tbl_YG_sh, digits = 0)
+```
+
+##### Note: 
+
+
+
 - calculate different yield gaps, also attainable yield gap and show differences
 
 - Compare distributions of yield gap per zone. 
@@ -209,6 +228,23 @@ Table x presents summary statistics for the climate zones that are located in th
 Comparison with literature
 
 Compare highest farmer yield with economic and feasible and show difference!!
+
+
+# Sensitivity analysis 
+Most attention in the literature on yield gaps has been devoted to the definition and measurement of potential yield, while that of actual yield has received relative limited attention (e.g. in recent reviews on yield gap approaches and data requirements for yield gap analysis [@VanIttersum2013, @Grassini2015a], the definition of area is not addressed at all). It is evident that the measurement of the two components of actual yield - quantity harvested and area - have significant impact on estimations of actual yield and the yield gap. Although, the measurement of both components is fraught with difficulties [@Fermont2011; @Reynolds], we fill focus here only on the measurement of area for which we have the data to compare a variety of definitions. 
+
+Two potential problems are relevant. The first is a question about which definition to use for area. It is common practice in the yield gap literature to follow the FAO definition and use harvested area to calculate actual yield [@Fischer2015]. Nonetheless, in a recent study @Reynolds argue that this definition leads to serious overestimation of actual yield because it ignores crop losses that might occur between planting and harvesting and a definition of actual yield relative to planted area is recommended. 
+
+Causes for the difference in area planted and area harvested include crop management factors (e.g. poor germination, damage from pests and diseases) and economic constraints (e.g. labor and capital constraints and shortage of market opportunities). These are exactly the same factors that one tries to grasp when doing yield gap analysis. Crop management and resource use decisions by farmers will be based on total plot area that is considered for agricultural production, not only the harvested area. Yield gap assessments using a definition based on harvested areas therefore will only capture a part of the yield gap.  
+
+The second is a measurement problem and deals with how to measure area (planted and harvested) in the best way. It has been shown that farmer self-assessed area is characterized by systematic errors and therefore GPS measurements are recommended [@Carletto2015a]. This is also underscored by the latest generation of (large-scale) household surveys, such as the LSMS-ISA that is used in this paper and the DHS, in which GPS measures are part of the standard protocol. Similarly, there are several initiatives that support the crowd-sourcing of plot size area using GPS to strenghten the property rights of farmers.  Exact (GPS) measures of harvest area are often not available because this will tend to change every year. A potential disadvantage of using GPS measures is that they often measure the total size of the plot or field, which may contain more than one crop because of multi-cropping or inter-cropping. This will likely result in an underestimation when compared to plots where all planted area is used for a single crop only.
+
+```{r yield_comp}
+# Add number of observations on in plot
+```
+
+
+
 
 # Conclusions/Discussion
 
@@ -229,4 +265,5 @@ Limitations
 
 - study only covers two years. Recommended number of years is 5(?). Actual yield might be biased because of outliers. Better to use more years, possible in the future when LSMS is repeated.
 
+A subsidy program did exist in Nigeria over the course of this survey. However, farmers were not asked whether they received these subsidies for the fertilizer they purchased which may also have consequences for the analysis ... 
 # References
