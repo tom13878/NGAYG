@@ -89,6 +89,7 @@ Fig_price_nit = ggplot(data = as.data.frame(Prices_nit), aes(x = CLIMATEZONE, y 
 
 #Fig_price_nit
 
+# Combine plots
 Fig_price = plot_grid(Fig_price_maize, Fig_price_nit)
 #Fig_price
 
@@ -104,25 +105,27 @@ yield_comp_harv <- db9_harv %>%
                       levels = c("Y", "Ycor", "TEY", "EY", "HFY90", "HFY95", "HFY100", "PFY", "PY"))) %>%
   group_by(CLIMATEZONE, variable) %>%
   summarize(n = n(),
-            max = quantile(value, probs = 0.90, na.rm = TRUE),
-            min = quantile(value, probs = 0.10, na.rm = TRUE),
+            max = quantile(value, probs = 0.95, na.rm = TRUE),
+            min = quantile(value, probs = 0.05, na.rm = TRUE),
             sd = sd(value, na.rm = TRUE),
             se = sd/sqrt(n),  # Calculate standard error of the mean
             mean_UW = mean(value, na.rm = T),
             mean_W = sum(value*area_harv, na.rm = TRUE)/sum(area_harv, na.rm = TRUE)) %>%
-  filter(!(variable %in% c("HFY95", "Ycor", "HFY100")))
+  filter(!(variable %in% c("HFY90", "Ycor", "HFY100")))
   
 # Figure with yield levels
 Fig_YL_harv = ggplot(data = yield_comp_harv, aes(x = variable, y=mean_W)) + 
   geom_bar(stat="identity", colour = "black", aes(fill = variable)) +
   geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
   guides(fill = F) +
-  facet_wrap(~CLIMATEZONE, scale = "free") +
+  facet_wrap(~CLIMATEZONE, scale = "free", ncol = 1) +
   theme_classic() +
   labs(x = "",
-       y = "tons/ha") +
+       y = "tons/ha",
+       title = "Harvested area") +
   theme(strip.background = element_blank(),
-        strip.text.x = element_text(face = "bold"))
+        strip.text.x = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
 
 #Fig_YL_harv
 
@@ -143,45 +146,187 @@ yield_comp_gps <- db9_gps %>%
             se = sd/sqrt(n),  # Calculate standard error of the mean
             mean_UW = mean(value, na.rm = T),
             mean_W = sum(value*area_gps, na.rm = TRUE)/sum(area_gps, na.rm = TRUE)) %>%
-  filter(!(variable %in% c("HFY95", "Ycor", "HFY100")))
+  filter(!(variable %in% c("HFY90", "Ycor", "HFY100")))
 
 # Figure with yield levels
 Fig_YL_gps = ggplot(data = yield_comp_gps, aes(x = variable, y=mean_W)) + 
   geom_bar(stat="identity", colour = "black", aes(fill = variable)) +
   geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
   guides(fill = F) +
-  facet_wrap(~CLIMATEZONE, scale = "free") +
+  facet_wrap(~CLIMATEZONE, scale = "free", ncol = 1) +
   theme_classic() +
   labs(x = "",
-       y = "tons/ha") +
+       y = "",
+       title = "Plot area") +
   theme(strip.background = element_blank(),
-        strip.text.x = element_text(face = "bold"))
+        strip.text.x = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
 
 #Fig_YL_gps
+
+# Combine plots
+Fig_YL = plot_grid(Fig_YL_harv, Fig_YL_gps)
 
 ### COMPARE GPS AND HARV ESTIMATES
 dbtot <- bind_rows(db9_gps, db9_harv) %>%
   dplyr::select(hhid, plotid, Y, Ycor, TEY, EY, PFY, PY, HFY90, HFY95, HFY100, CLIMATEZONE, surveyyear, source) %>%
   gather(variable, value, -hhid, -plotid, -CLIMATEZONE, -surveyyear, -source) %>%
   spread(source, value) %>%
-  filter(variable %in% c("Y", "EY", "TEY", "PFY"))
+  filter(variable %in% c("Y", "EY", "TEY", "PFY"),  CLIMATEZONE %in% CZ_target)
 
-Fig_gps_harv_comp <- ggplot() + geom_point(data = dbtot, aes(x = gps, y = harv)) +
+Fig_gps_harv_comp <- ggplot() + 
+  geom_point(data = dbtot, aes(x = gps, y = harv, colour = CLIMATEZONE)) +
   coord_fixed(ratio = 1) +
   facet_wrap(~variable, scale = "free") +
   geom_abline(intercept = 0, slope =1) +
   theme(strip.background = element_blank(),
         strip.text.x = element_text(face = "bold")) +
-  theme(aspect.ratio=1)
+  theme(aspect.ratio=1) +
+  labs(x = "Plot area based yield levels (kg/ha)", 
+       y = "Harvested area based yield levels (kg/ha)",
+       colour = "Climate zone") +
+  coord_cartesian(ylim=c(0, 15000),xlim=c(0, 15000)) +
+  scale_y_continuous(breaks=seq(0, 15000, 2500)) +
+  scale_x_continuous(breaks=seq(0, 15000, 2500)) +
+  theme(legend.position="bottom",
+        legend.box="horizontal") +
+  guides(colour = guide_legend(title.position="top", title.hjust = 0.5))
 
+Fig_gps_harv_comp  
+
+### SHARE OF YIELD GAPS 
+# GPS
+Tbl_YG_gps <- bind_rows(
+  db9_gps %>%
+    ungroup() %>%
+    filter(CLIMATEZONE %in% CZ_target) %>%
+    dplyr::select(hhid, plotid, area_gps, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+    group_by(CLIMATEZONE) %>%
+    summarize(ERROR_l =(sum((ERROR_l)*area_gps)/sum(area_gps)),
+              TEYG_l = (sum((TEYG_l)*area_gps)/sum(area_gps)),
+              EYG_l = (sum((EYG_l)*area_gps)/sum(area_gps)),
+              EUYG_l = (sum((EUYG_l)*area_gps)/sum(area_gps)),
+              TYG_l = (sum((TYG_l)*area_gps)/sum(area_gps)),
+              YG_l = (sum((YG_l)*area_gps)/sum(area_gps)),
+              YG_l_Ycor = (sum((YG_l_Ycor)*area_gps)/sum(area_gps)),
+              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l)),
+  db9_gps %>%
+    ungroup() %>%
+    filter(CLIMATEZONE %in% CZ_target) %>%
+    dplyr::select(hhid, plotid, area_gps, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+    summarize(CLIMATEZONE = "Total",
+              ERROR_l =(sum((ERROR_l)*area_gps)/sum(area_gps)),
+              TEYG_l = (sum((TEYG_l)*area_gps)/sum(area_gps)),
+              EYG_l = (sum((EYG_l)*area_gps)/sum(area_gps)),
+              EUYG_l = (sum((EUYG_l)*area_gps)/sum(area_gps)),
+              TYG_l = (sum((TYG_l)*area_gps)/sum(area_gps)),
+              YG_l = (sum((YG_l)*area_gps)/sum(area_gps)),
+              YG_l_Ycor = (sum((YG_l_Ycor)*area_gps)/sum(area_gps)),
+              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l))) %>%
+  dplyr::select(-ERROR_l,-YG_l, -YG_lcheck)
+
+Tbl_YG_sh_gps <- Tbl_YG_gps %>%
+  mutate(
+    TEYG = TEYG_l/YG_l_Ycor,
+    EYG = EYG_l/YG_l_Ycor,
+    EUYG = EUYG_l/YG_l_Ycor,
+    TYG = TYG_l/YG_l_Ycor,
+    YG = (TEYG_l + EYG_l + EUYG_l + TYG_l)/YG_l_Ycor) %>%
+  dplyr::select(-TEYG_l:-YG_l_Ycor) %>%
+  setNames(c("CL", "TEYg", "EYg", "FYg", "TYg", "Yg")) %>%
+  gather(variable, value, -CL) %>%
+  filter(variable != "Yg") %>%
+  mutate(CL = factor(CL, levels = c("9301", "9401", "9501", "9701", "9801", "9901", "10401", "Total")),
+         variable = factor(variable, levels = c("TYg", "FYg", "EYg", "TEYg"))) %>%
+  group_by(CL) %>%
+  mutate(pos = (cumsum(value) - 0.5*value),
+         label = paste0(sprintf("%.0f", value*100), "%"),
+         source = "gps")
+
+
+Fig_YG_gps <- ggplot(Tbl_YG_sh_gps, aes(x = CL, y = value, fill = variable)) + 
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = percent_format()) +
+  geom_text(aes(y = pos, label = label), size = 3) +
+  labs(x = "", y = "", colour = "Yield gap", title = "Harvested area") +
+  theme(plot.title = element_text(hjust = 0.5)) # To centre title
+
+
+# Harv
+Tbl_YG_harv <- bind_rows(
+  db9_harv %>%
+    ungroup() %>%
+    filter(CLIMATEZONE %in% CZ_target) %>%
+    dplyr::select(hhid, plotid, area_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+    group_by(CLIMATEZONE) %>%
+    summarize(ERROR_l =(sum((ERROR_l)*area_harv)/sum(area_harv)),
+              TEYG_l = (sum((TEYG_l)*area_harv)/sum(area_harv)),
+              EYG_l = (sum((EYG_l)*area_harv)/sum(area_harv)),
+              EUYG_l = (sum((EUYG_l)*area_harv)/sum(area_harv)),
+              TYG_l = (sum((TYG_l)*area_harv)/sum(area_harv)),
+              YG_l = (sum((YG_l)*area_harv)/sum(area_harv)),
+              YG_l_Ycor = (sum((YG_l_Ycor)*area_harv)/sum(area_harv)),
+              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l)),
+  db9_harv %>%
+    ungroup() %>%
+    filter(CLIMATEZONE %in% CZ_target) %>%
+    dplyr::select(hhid, plotid, area_harv, Ycor, TEY, EY, PFY, PY, ERROR_l, TEYG_l, EYG_l, EUYG_l, TYG_l, YG_l, YG_l_Ycor, CLIMATEZONE, surveyyear) %>%
+    summarize(CLIMATEZONE = "Total",
+              ERROR_l =(sum((ERROR_l)*area_harv)/sum(area_harv)),
+              TEYG_l = (sum((TEYG_l)*area_harv)/sum(area_harv)),
+              EYG_l = (sum((EYG_l)*area_harv)/sum(area_harv)),
+              EUYG_l = (sum((EUYG_l)*area_harv)/sum(area_harv)),
+              TYG_l = (sum((TYG_l)*area_harv)/sum(area_harv)),
+              YG_l = (sum((YG_l)*area_harv)/sum(area_harv)),
+              YG_l_Ycor = (sum((YG_l_Ycor)*area_harv)/sum(area_harv)),
+              YG_lcheck = (ERROR_l+TEYG_l+EYG_l+EUYG_l+TYG_l))) %>%
+  dplyr::select(-ERROR_l,-YG_l, -YG_lcheck)
+
+Tbl_YG_sh_harv <- Tbl_YG_harv %>%
+  ungroup() %>%
+  mutate(
+    TEYG = TEYG_l/YG_l_Ycor,
+    EYG = EYG_l/YG_l_Ycor,
+    EUYG = EUYG_l/YG_l_Ycor,
+    TYG = TYG_l/YG_l_Ycor,
+    YG = (TEYG_l + EYG_l + EUYG_l + TYG_l)/YG_l_Ycor) %>%
+  dplyr::select(-TEYG_l:-YG_l_Ycor) %>%
+  setNames(c("CL", "TEYg", "EYg", "FYg", "TYg", "Yg")) %>%
+  gather(variable, value, -CL) %>%
+  filter(variable != "Yg") %>%
+  mutate(CL = factor(CL, levels = c("9301", "9401", "9501", "9701", "9801", "9901", "10401", "Total")),
+         variable = factor(variable, levels = c("TYg", "FYg", "EYg", "TEYg"))) %>%
+  group_by(CL) %>%
+  mutate(pos = (cumsum(value) - 0.5*value),
+         label = paste0(sprintf("%.0f", value*100), "%"),
+         source = "harv")
+
+
+Fig_YG_harv <- ggplot(Tbl_YG_sh_harv, aes(x = CL, y = value, fill = variable)) + 
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = percent_format()) +
+  geom_text(aes(y = pos, label = label), size = 3) +
+  labs(x = "", y = "", title = "Plot area") +
+  theme(plot.title = element_text(hjust = 0.5)) # To centre title
   
 
-  
+# Combine data
+Tbl_YG_sh <- bind_rows(Tbl_YG_sh_gps, Tbl_YG_sh_harv) %>%
+  mutate(source = ifelse(source == "gps", "Plot area", "Harvested area"))
+
+Fig_YG <- ggplot(Tbl_YG_sh, aes(x = CL, y = value, fill = variable)) + 
+  geom_bar(stat = "identity") +
+  scale_y_continuous(labels = percent_format()) +
+  geom_text(aes(y = pos, label = label), size = 3) +
+  facet_wrap(~source) +
+  theme_classic() +
+  labs(x = "", y = "", fill = "Yield gap") +
+  theme(strip.background = element_blank(),
+        strip.text.x = element_text(face = "bold"),
+        plot.title = element_text(hjust = 0.5))
 
 
-
-
-#Fig_YL_gps
+  #Fig_YL_gps
 # 
 # ggplot(data = yield_comp2, aes(x = ZONE, y = value, colour = variable, shape = variable)) + 
 #   geom_line(aes(group = ZONE), colour = "black", linetype = "solid") +

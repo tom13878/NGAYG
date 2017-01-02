@@ -151,7 +151,7 @@ db0 <- db0 %>%
                        logae_harv = log(ae/area_harv),
                        logae_gps = log(ae/area_gps),
                        asset = implmt_value + lvstk2_valu,
-                       assetph=asset/area_tot,
+                       assetph=winsor(asset/area_tot),
                        logasset = log(assetph+1),
                        #loglab = log(lab+1),
                        logarea_gps = log(area_gps), # area_gps not area because we want to add plot size as proxy for economies of scale
@@ -159,7 +159,8 @@ db0 <- db0 %>%
                        #rain_year2 = rain_year*rain_year,
                        pestherb = ifelse(herb==1 | pest==1, 1, 0),
                        #ext = ifelse(ext_dummy_pp==1 | ext_dummy_ph ==1, 1, 0),
-                       logseedq_gps = log(seed_q/area_gps),
+                       seedq_gps = winsor(seed_q/area_gps),
+                       logseedq_gps = log(seedq_gps),
                        #lograin = log(rain_year),
                        #sex = as.numeric(ifelse(sex == "MALE", 0, 1)),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
@@ -276,7 +277,7 @@ sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_gps +
                 logseedq_gps +
                 logarea_gps +
                 pestherb +
-                irrig +
+                #irrig +
                 #mech + 
                 antrac + 
                 slope + elevation +
@@ -294,7 +295,7 @@ sfaCD1_gps <- sfa(logyld_gps ~ noN + logN_gps +
                      logseedq_gps +
                      logarea_gps +
                      pestherb +
-                     irrig +
+                     #irrig +
                      #mech + 
                      antrac + 
                      slope + elevation +
@@ -324,7 +325,7 @@ db2_sfaCD1_harv <- db1 %>%
                                (coef(model)["noN"]*noN) +
                                (coef(model)["logseedq_gps"]*logseedq_gps) +
                                (coef(model)["logarea_gps"]*logarea_gps) +
-                               (coef(model)["irrig"]*irrig) +
+                               #(coef(model)["irrig"]*irrig) +
                                (coef(model)["pestherb"]*pestherb) +
                                (coef(model)["antrac"]*antrac) +
                                (coef(model)["slope"]*slope) +
@@ -572,7 +573,7 @@ db2_sfaCD1_gps <- db1 %>% mutate(elastfert = coef(model)["logN_gps"],
                                     (coef(model)["noN"]*noN) +
                                     (coef(model)["logseedq_gps"]*logseedq_gps) +
                                     (coef(model)["logarea_gps"]*logarea_gps) +
-                                    (coef(model)["irrig"]*irrig) +
+                                    #(coef(model)["irrig"]*irrig) +
                                     (coef(model)["pestherb"]*pestherb) +
                                     (coef(model)["antrac"]*antrac) +
                                     (coef(model)["slope"]*slope) +

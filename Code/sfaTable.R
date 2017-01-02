@@ -3,7 +3,7 @@
 # Still need to improve so that it also includes z variables and diagnistics can be selected as separate options
 
 #model <- sfaCD1_gps
-sfaTable_f <- function(model, nc = 2){
+sfaTable_f <- function(model, nc = 3){
   sfaTableOut <- list()
   
   rawTable <-as.data.frame(summary(model, extraPar = F)$mleParam)
@@ -25,7 +25,8 @@ sfaTable_f <- function(model, nc = 2){
                                 ifelse(P <= 0.05, "*", ""))))
     
   sfaTable <- data.frame(variable = varnames, stringsAsFactors=FALSE)
-  sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, nc))
+  #sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, nc))
+  #sfaTable$Coef. <- rawTable$Estimate
   sfaTable$"Std. Error" <- sprintf("%.3f", round(rawTable$"Std. Error", nc))
   #sfaTable$sign <- rawTable$sign
   sfaTable$"Std. Error" <- paste(sfaTable$"Std. Error", rawTable$sign, sep = " ")
