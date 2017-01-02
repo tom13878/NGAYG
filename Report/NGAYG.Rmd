@@ -49,28 +49,6 @@ To demonstrate our framework we present an application using a large nationally 
 
 The structure of the paper is as follows. Section 2 provides a conceptual framework that integrates varies definitions of yield levels and yield gap. Section 3 briefly discusses the Nigerian farm level maize data set that is used to illustrate the conceptual model. Section 4 computes the yield levels and yield gaps followed by a discussion in Section 5. Finally, Section 6 concludes. 
 
-
-# Background
-## Conventional yield levels
-For the discussion it is relevant to briefly summarize the conventional yield levels that are used in the agronomic literature to estimate yield gaps.
-
-- _Actual yield_ also sometimes referred to as (average) farm yield [@Fischer2015; @VanIttersum2013], is the (average) yield obtained by farmers in a geographic area for a given crop with a given water regime [@Grassini2015a]. It is defined as:
-
-$$ Actual\:yield=\frac{\sum Quantity\:harvested\:(kgs\backslash tons)}{\sum Area\:(hectares)} $$
-
-Actual yield is typically expressed in kilograms or tons per hectare and measured relative to harvested land area [@Fischer2015]
-
-- _Potential yield_ is defined as _“the yield of a cultivar when grown in environments to which it is adapted, with nutrients and water non-limiting and with pests, diseases, weeds, lodging, and other stresses effectively controlled”_ [@Evans1999]. It depends on local climate and weather factors, including  atmospheric CO2 emissions, solar radiation, temperature as well as plant characteristics but is independent of soil, which is assumed to be physically and chemically favorable to crop growth [@VanIttersum1997; @Sadras2015]. Potential yield is the preferred benchmark for irrigated crops, where precipitation is not a constraining factor. 
-
-- _Water-limited potential yield_ (or just water-limited yield) is similar to potential yield but takes into account that water supply is limited, which is particularly relevant for rain fed crops. It is therefore strongly influenced by the water holding capacity and rooting depth of the soil, which regulate the supply of water. Water-limited potential yield is the reference value to estimate yield gaps for rain fed crops.
-
-- _Exploitable yield._ is defined as 70-85% of (water-limited) potential yield. The 70-85% is used as a 'rule of thumb' to capture the empirical finding that yield levels tend to stagnate at around 70-85 percent of potential yield [@Cassman1999; @Cassman2003; @Lobell2009, @VanIttersum2013, @Fischer2015]. The explanation for  stagnating yield levels is mainly economic. For most farmers it will not be cost-effective to purchase the large amount of inputs (e.g. fertilizer) that are needed to produce at the potential yield level [@Fischer2014] nor will farmers be willing to pay for the additional costs that are needed to 'fine-tune' crop and soil management [@Cassman2003]. @Fischer2015, uses exact the same definition but calls it_economic yield_.
-
-- _Attainable yield_ is used frequently in the yield gap literature but often in a rather ad hoc and inconsistent way, meaning a variety of things. Fischer and colleagues [@Fischer2014; @Fischer2015] equate attainable yield with *economic yield* by defining it as *'the yield attained by a farmer from average natural resources when economically optimal practices and levels of inputs have been adopted while facing the vagaries of weather'* [p.32]. @Sadras2015 use the following definition: *'the best yield achieved through skilful use of the best available technology'* [p. 6]. A similar definition is provided by [@Tittonell2013], who defined coin the term 'locally attainable yield', which is *the maximum yield achievable by resource endowed farmers in their most productive fields'* [p78]. Clearly, the definition of attainable yield by @Sadras2015 and @Tittonnell2013 differs from that of Fischer and colleagues [@Fischer2014; @Fischer2015] because it reflects the highest possible yield that can be reached with best available technology and not economic constraints. Finally, several researchers take an empirical approach and refer to attainable yield as the average of the (90 or 95 percentile) highest yield in the sample of observations [@Hall2013; @Mann2017]. In many cases, the empirically observed attainable yield is used to approximate (water-limited) potential yield when results from crop simulation, the preferred measure [@VanIttersum2013], are not available.  
-
-- _Highest farmers' yield._ (or best farmers' yield) is average of the top 90 or 95 percentile actual yield observed in a sample of farmers or plots [@Laborte2012; @Silva2016]. It is identical to the last definition of attainable yield mentioned above. 
-
-
 ## Conceptual framework
 We use the conceptual framework developed by @Vandijk2016 to decompose the conventional yield gap. Figure 1 shows the observed input and output combinations of a number of agricultural units (e.g. field, farm or region). For purpose of illustration, we assume that the observations are small-scale farms in Africa, who produce a single output (e.g. maize) using one input (e.g fertilizer), agroecological conditions are identical for all farms and water is not limited. The _theoretical yield response function_ describes the relationship between yield and inputs under perfect crop management and most advanced technology. The maximum of the function is the potential yield level. The _frontier yield response function_ is estimated using actual observations from a sample of farmers or plots in a specific country or region. It measures best-practice performance at all input levels and reflects the best management practices and technology that are available in the region. The diagonal line presents the relative input ($w$) and output ($p$) market price faced by the farmers. 
 
@@ -80,7 +58,9 @@ The second major cause of yield gaps is related to the efficient use and adoptio
 
 The second technology aspect is the adoption of advanced technologies. As has been pointed out by @Tittonell2013 most small-scale farmers are subsistence farmers with limited access to appropriate technologies. Even if resource availability would not be a problem and farmers would produce at best-practice level, there would still be a gap with the potential yield level. Closing this gap would require the use of advanced technologies such as precision agriculture, advanced crop management and the adoption of the latest varieties (hybrid seeds). The adoption of advanced technologies will help farmers to increase their yield to a level that previously not could be attained. The effect is an upward shift of the frontier yield response curve in the direction of the theoretical yield response curve and a reduction of the yield gap.
 
-Figure 1 depicts the three yield levels that can be derived on the basis of the economic, technical efficiency and technology constraints discussed above: 
+Figure 1 depicts the five yield levels that can be derived on the basis of the economic, technical efficiency and technology constraints discussed above: 
+
+- _Potential yield_ is defined as _“the yield of a cultivar when grown in environments to which it is adapted, with nutrients and water non-limiting and with pests, diseases, weeds, lodging, and other stresses effectively controlled”_ [@Evans1999]. It depends on local climate and weather factors, including  atmospheric CO2 emissions, solar radiation, temperature as well as plant characteristics but is independent of soil, which is assumed to be physically and chemically favorable to crop growth [@VanIttersum1997; @Sadras2015]. _Water-limited potential yield_ is similar to potential yield but takes into account that water supply is limited, which is particularly relevant for rain fed crops such as maize in Nigeria.
 
 - _Technical efficiency yield_ measures best-practice performance for a field, farm or region at each input level and reflects the available technology and best management practices in the sample.
 
@@ -88,18 +68,27 @@ Figure 1 depicts the three yield levels that can be derived on the basis of the 
 
 - _Feasible yield._ Feasible yield represents the maximum feasible yield that can be reached on a plot with the available technology and best-practice management but without any economic constraints (e.g. inputs are free). This yield level is also sometimes referred to as ‘potential farm yield’ [@Datta1981], ‘maximum attainable yield’ [@FAO2004] and ‘technical on-farm ceiling yield’ [@DeBie2000]. It has the same meaning as the definition of _attainable yield_ used by @Sadras2015 and @Tittonell2013. 
 
-The figure also depicts the _highest farmers' yield_ (for convenience measured as a single observation). In the present situation highest farmers' yield is much higher than economic yield. This implies that, given relative market prices ($w/p$) the farmer with the highest yield is not producing at the economic optimum level. Potential reasons for this behavior might be [ADD]. Another reason might be that the actual relative price of the farmer is lower than the market because of (fertilizer) subsidies, which are common practice in many sub-Saharan African countries. Hence, this particular situation demonstrates that the _highest farmers' yield_ is not a good proximate for _economic yield_. On the other hand, although resource use differs considerably (the difference between $X_f$ and $X_hfy$) the _highest farmers' yield_ is very close to the _feasible yield level_. A well-known observation in agronomy is that the response to inputs is decreasing (or even stagnates or becomes negative) [REF], at high levels of input use. Hence, despite constraints to resource use, the yield of farmers with the highest yield is likely to be close to the feasible yield level [WILL CHECK IF THIS IS THE CASE FOR NIGERIA]. For this reason, we argue that the _highest farmers_yield is an acceptable indicator if one is interested in having a benchmark for the maximum yield achievable on a field using the best-available technology. It is an empirical question whether actual yield, technical efficiency yield, economic yield and feasible yield are located at or close to the same point. This is further investigated below.
+
+
+- _Exploitable yield._ is defined as 70-85% of (water-limited) potential yield. The 70-85% is used as a 'rule of thumb' to capture the empirical finding that yield levels tend to stagnate at around 70-85 percent of potential yield [@Cassman1999; @Cassman2003; @Lobell2009, @VanIttersum2013, @Fischer2015]. The explanation for  stagnating yield levels is mainly economic. For most farmers it will not be cost-effective to purchase the large amount of inputs (e.g. fertilizer) that are needed to produce at the potential yield level [@Fischer2014] nor will farmers be willing to pay for the additional costs that are needed to 'fine-tune' crop and soil management [@Cassman2003]. @Fischer2015, uses exact the same definition but calls it_economic yield_.
+
+- _Attainable yield_ is used frequently in the yield gap literature but often in a rather ad hoc and inconsistent way, meaning a variety of things. Fischer and colleagues [@Fischer2014; @Fischer2015] equate attainable yield with *economic yield* by defining it as *'the yield attained by a farmer from average natural resources when economically optimal practices and levels of inputs have been adopted while facing the vagaries of weather'* [p.32]. @Sadras2015 use the following definition: *'the best yield achieved through skilful use of the best available technology'* [p. 6]. A similar definition is provided by [@Tittonell2013], who defined coin the term 'locally attainable yield', which is *the maximum yield achievable by resource endowed farmers in their most productive fields'* [p78]. Clearly, the definition of attainable yield by @Sadras2015 and @Tittonnell2013 differs from that of Fischer and colleagues [@Fischer2014; @Fischer2015] because it reflects the highest possible yield that can be reached with best available technology and not economic constraints. Finally, several researchers take an empirical approach and refer to attainable yield as the average of the (90 or 95 percentile) highest yield in the sample of observations [@Hall2013; @Mann2017]. In many cases, the empirically observed attainable yield is used to approximate (water-limited) potential yield when results from crop simulation, the preferred measure [@VanIttersum2013], are not available.  
+
+
+The figure also depicts the _highest farmers' yield_, which is defined as the average of the top 90 or 95 percentile actual yield observed in a sample of farmers or plots [@Laborte2012; @Silva2016] but displayed as a single observation for convenience. Highest farmers' yield is [@REF TO TITONELL AND GILLER] In the present situation highest farmers' yield is much higher than economic yield. This implies that, given relative market prices ($w/p$) the farmer with the highest yield is not producing at the economic optimum level. Potential reasons for this behavior might be [ADD]. Another reason might be that the actual relative price of the farmer is lower than the market because of (fertilizer) subsidies, which are common practice in many sub-Saharan African countries.
+
+Hence, this particular situation demonstrates that the _highest farmers' yield_ is not a good proximate for _economic yield_. On the other hand, although resource use differs considerably (the difference between $X_f$ and $X_hfy$) the _highest farmers' yield_ is very close to the _feasible yield level_. A well-known observation in agronomy is that the response to inputs is decreasing (or even stagnates or becomes negative) [REF], at high levels of input use. Hence, despite constraints to resource use, the yield of farmers with the highest yield is likely to be close to the feasible yield level [WILL CHECK IF THIS IS THE CASE FOR NIGERIA]. For this reason, we argue that the _highest farmers_yield is an acceptable indicator if one is interested in having a benchmark for the maximum yield achievable on a field using the best-available technology. It is an empirical question whether actual yield, technical efficiency yield, economic yield and feasible yield are located at or close to the same point. This is further investigated below.
 
 **Figure 1: Conceptual framework**
 
 ```{r Figure-1}
-knitr::include_graphics("../FigTabMap/Fig_YG_fw.png")
+knitr::include_graphics("../FigTabMap/Figure-1.png")
 #knitr::include_graphics(file.path(root, "FigTabMap/Yield_Gap_Framework.png")) Does not work for some reason..
 ```
 
 ##### Source: 
 
-The total yield gap ($Yg$) can be decomposed in four parts: the technical efficiency yield gap ($TEYg$), the economic yield gap ($EYg$), the feasible yield gap ($FYg$) and the technology yield gap ($Tg$) [@VanDijk2016]. The sum of the economic yield gap and the feasible yield gap has been referred to as the resource yield gap ($Rg$) [@Silva2016]. Table 1 summarizes the definitions and potential causes for the the six yield gaps that can be derived from Figure 1. 
+The total yield gap ($Yg$) can be decomposed in four parts: the technical efficiency yield gap ($TEYg$), the allocative yield gap ($AYg$), the economic yield gap ($EYg$) and the technology yield gap ($TYg$) [@VanDijk2016]. Table 1 summarizes the definitions and potential causes for the the five yield gaps that can be derived from Figure 1. 
 
 Global studies of yield gaps clearly show that the (total) yield gap is highest in sub-Saharan countries like Nigeria [@Mueller2012; @Licker2010; @Neumann2010]. The decomposition of the yield gap provides a deeper understanding for this finding and its causes. Knowledge constraints (e.g. access to extension services) result in technical efficiency yield gaps while pervasive market failures that characterize (agricultural) input and output markets in many sub-Saharan countries will lead to economic yield gaps. Similarly , we expect a large feasible yield gap because of the unfavorable balance between input and output prices in sub-Saharan countries. This is underscored by the high fertilizer price in many sub-Saharan countries caused poor dealer networks, high transportation costs and small market size [@Morris2007]. Finally, the technology yield gap is also expected to be large. [ADD evidence technology use in Africa]. The existence of (agricultural) technology gaps between rich and poor countries has been studied widely [@Fagerberg1994, @Mekonnen2015, @Headey2010a] and can been related to the combination of broader institutional, technological, economic and social factors.
 
@@ -110,8 +99,8 @@ Global studies of yield gaps clearly show that the (total) yield gap is highest 
 ```{r Table 1}
 library(readr)
 library(knitr)
-Tbl_YG <- read_csv(file.path(root, "FigTabMap/Tbl_YG.csv"))
-kable(Tbl_YG)
+Tab_YG <- read_csv(file.path(root, "FigTabMap/Table-1.csv"))
+kable(Tab_YG)
 ```
 
 ##### Source: 
@@ -159,7 +148,7 @@ Fig_price
 **Table 2: Descriptive statistics per climate zone**
 
 ```{r Table-2}
-pander(CZ_tbl, digits = c(2))
+pander(Tab_CZ, digits = c(2))
 ```
 
 ##### Source: LSMS-ISA and GYGA 
@@ -205,7 +194,7 @@ Table x presents summary statistics for the climate zones that are located in th
 **Figure 4: Yield levels**
 
 ```{r Figure-4}
-Fig_YL
+Fig_YL_harv
 ```
 
 ##### Source: 

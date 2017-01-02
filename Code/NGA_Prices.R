@@ -105,13 +105,15 @@ base <- dbP %>%
   na.omit
 
 # Values are winsored aggregates are presented for at least 5 values
+# We winsor at 1.5 times the median as there are many implausible outliers (<3 prices)
 # market  prices
 fertmar <- fert %>%
   filter(price > 0) %>%
   group_by(surveyyear) %>%
-  mutate(price = winsor2(price))
-  
+  mutate(price = winsor2(price, multiple = 1.5))
 
+summary(fertmar)
+hist(fertmar$price)  
 
 medianPrice_f <- function(df, level, group, type){
   prices <- df %>% 
@@ -157,7 +159,10 @@ rm(fpCountry, fpZone, fpRegion, fpDistrict, fertmar)
 # Maize prices
 maize <- dbP %>% 
   dplyr::select(ZONE, REGNAME, DISNAME, surveyyear, price = crop_price) %>%
-  mutate(price = winsor2(price))
+  mutate(price = winsor2(price, multiple = 1.5))
+
+summary(maize)
+hist(maize$price)  
 
 fpCountry <- maize %>%
   group_by(surveyyear) %>%
@@ -193,7 +198,7 @@ plotPrice <- select(dbP, hhid, plotid, ZONE, REGNAME, DISNAME, surveyyear, Pn = 
   gather(type, plotPrice, Pn, Pc) %>%
   mutate(plotPrice = ifelse(plotPrice == 0, NA, plotPrice)) %>% # remove one value with zero price
   group_by(type, surveyyear) %>%
-  mutate(plotPrice =winsor2(plotPrice)) %>%
+  mutate(plotPrice =winsor2(plotPrice, multiple = 1.5)) %>%
   ungroup() %>% unique
 
 # Substitute regional prices when plot level price is not available

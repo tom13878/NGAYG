@@ -29,13 +29,11 @@ options(digits=4)
 # Can be sourced later
 db1 <- readRDS(file.path(root, "Cache/db1.rds"))
 db9_harv <- readRDS(file.path(root, "Cache/db9_harv.rds"))
-#db_sfaCD_CRE_Z <- readRDS("Cache/db_sfaCD_CRE_Z.rds")
-#Prices <- readRDS("Cache/Prices_ETH.rds") %>% rename(Pm = maize, Pn = fertilizer)
-#source("Code/waterfall_plot.R")
+db9_gps <- readRDS(file.path(root, "Cache/db9_gps.rds"))
 
 ### DEFINE TARGET CLIMATEZONES
 # Select target zones as CLIMATEZONES > 50 plot observations
-CZ_target <- db9_harv %>%
+CZ_target <- db9_gps %>%
   ungroup() %>%
   dplyr::select(CLIMATEZONE, hhid, plotid) %>%
   group_by(CLIMATEZONE) %>%
@@ -89,13 +87,12 @@ GYGA_df_f <- fortify(GYGA_country) %>%
 
 ### COMBINED POTENTIAL YIELD AND LSMS-ISA MAP
 # Prepare mean yield data
-yld <- db9_harv %>%
+yld <- db1 %>%
   ungroup() %>%
   group_by(lon, lat) %>%
   summarize(n=n(),
-            av_yld = (sum(Y*area_harv)/sum(area_harv))/1000) %>%
-  filter(n>1) %>%
-  mutate(av_yld2 = cut(av_yld, breaks=c(0, 1, 2, 3, 13)))
+            av_yld = (sum(yld_gps*area_gps)/sum(area_gps))/1000) %>%
+  mutate(av_yld2 = cut(av_yld, breaks=c(0, 1, 2, 3, 7)))
 
 
 # Map with target climate zones and average yield

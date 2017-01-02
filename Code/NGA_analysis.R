@@ -31,7 +31,13 @@ options(scipen=999)
 #######################################
 
 # Load pooled data
-dbP <- readRDS("Cache/Pooled_NGA.rds")
+# CHECK WHY THERE IS ONE DUPLICATE
+dbP <- readRDS("Cache/Pooled_NGA.rds") 
+
+check <- dbP %>% group_by(hhid, plotid, surveyyear) %>% summarize (n())
+check2  <- filter(dbP, hhid == 230061, plotid == 2) 
+check3 <- data.frame(t(check2))
+# EAID link is off as well as some others!! CHECK
 
 #######################################
 ############## CLEANING ###############
@@ -68,19 +74,18 @@ dbP <- dbP %>%
          yld_harv = crop_qty_harv/area_harv) %>%
   filter(yld_gps <= maxYP & yld_harv <= maxYP) 
   
-# Sample includes very small plots <0.005 ha that bias result upwards and very large >35 ha. 
+# Sample includes very small plots <0.005 ha that bias result upwards and very large >35 ha.
 # As we focus on small scale farmers we restrict area size
 dbP <- filter(dbP, area_gps >=0.01 & area_gps <=10) %>%
        filter(area_harv >=0.01 & area_harv <=10)
 
 # restrict attention to plots that use N < 700. 700kg/hectare  represents an upper bound limit associated with inorganic fertilizer use in the United States under irrigated corn conditions (Sheahan & Barett 2014) 
 dbP <- dbP %>%
-  mutate(N_gps = N/area_gps,
-         N_harv = N/area_harv) %>%
-  filter(N_gps <= 700 & N_harv <= 700)
+  mutate(N_gps = N/area_gps) %>%
+  filter(N_gps <= 700)
 
 db0 <- dbP %>% 
-  dplyr::select(hhid, plotid, ZONE, REGNAME, DISNAME, CLIMATEZONE, YW, fs,
+  dplyr::select(hhid, plotid, ZONE, REGNAME, DISNAME, CLIMATEZONE, 
                 SOC, SOC2, ph, ph2, 
                 rain_wq, 
                 slope, elevation,
@@ -89,13 +94,13 @@ db0 <- dbP %>%
                 area_gps, area_harv, 
                 area_harv_farmer, area_farmer,
                 ae,
-                seed, seed_q,
+                seed_q,
                 area_tot, 
-                implmt_value, lvstk_valu, lvstk2_valu,
+                implmt_value, lvstk2_valu,
+                #lvstk_valu,
                 pest, herb,
-                N_harv, N_gps, 
-                mech, antrac,
-                inter_crop,
+                N_gps, 
+                antrac,
                 irrig,
                 crop_count, surveyyear,
                 lat, lon)
@@ -107,8 +112,10 @@ summary(db0)
 ###### COMPLETE CASES DATABASE ########
 #######################################
 
+# Run complete cases on all variables except YW which is missing for certain areas
 db0 <- db0 %>%
-  do(filter(., complete.cases(.)))
+    do(filter(., complete.cases(.))) %>% 
+    unique()
 
 
 ######################################
@@ -137,7 +144,6 @@ db0 <- db0 %>%
                        logyld_gps = log(yld_gps),
                        yesN = ifelse(N_gps>0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
                        noN = ifelse(N_gps<=0, 1,0), # Dummy when plot does not use fertilizer, following approach of Battese (1997)
-                       logN_harv = log(pmax(N_harv, noN)), # maximum of dummy and N following Battese (1997)
                        logN_gps = log(pmax(N_gps, noN)), # maximum of dummy and N following Battese (1997)
                        #lab = harv_lab + harv_lab_hire,
                        #hirelab_sh = harv_lab_hire/(harv_lab_hire + harv_lab)*100,
@@ -153,15 +159,12 @@ db0 <- db0 %>%
                        #rain_year2 = rain_year*rain_year,
                        pestherb = ifelse(herb==1 | pest==1, 1, 0),
                        #ext = ifelse(ext_dummy_pp==1 | ext_dummy_ph ==1, 1, 0),
-                       logseedq_harv = log(seed_q/area_harv),
                        logseedq_gps = log(seed_q/area_gps),
                        #lograin = log(rain_year),
                        #sex = as.numeric(ifelse(sex == "MALE", 0, 1)),
                        surveyyear2 = replace(surveyyear==2010, 1, 0))
 
-# Remove observations with extreme N_harv because of very 0 asset and 0 harv_lab
-#db0 <- filter(db0, asset!= 0 & lab != 0)
-db0 <- filter(db0, N_harv <=700)
+
 
 # -------------------------------------
 # Inflate 2011 prices to 2013 prices: assets
@@ -185,7 +188,6 @@ db0 <- db0 %>%
       mutate(
         #loglab_bar=mean(loglab, na.rm=TRUE),
              logae_harv_bar=mean(logae_harv, na.rm=TRUE),
-             logN_harv_bar=mean(logN_harv, na.rm=TRUE),
              noN_bar=mean(noN, na.rm=TRUE),
              logasset_bar=mean(logasset, na.rm=TRUE),
              logarea_gps_bar=mean(logarea_gps, na.rm=TRUE),
@@ -194,9 +196,8 @@ db0 <- db0 %>%
              pest_bar=mean(pest, na.rm = TRUE),
              herb_bar=mean(herb, na.rm = TRUE),
              pestherb_bar=mean(pestherb, na.rm = TRUE),
-             seed_bar=mean(seed, na.rm = TRUE),
              #logseed_q_bar=mean(logseed_q, na.rm=TRUE),
-             mech_bar=mean(mech, na.rm = TRUE),
+             #mech_bar=mean(mech, na.rm = TRUE),
              antrac_bar=mean(antrac, na.rm = TRUE),
              #inter_crop_bar=mean(inter_crop, na.rm = TRUE),
              #ext_bar=mean(ext, na.rm = TRUE),
@@ -221,9 +222,8 @@ summary(select(db1, Pc, Pn)) # Note that 8 plots do not have price date because 
 
 # Drop unused levels (e.g. Zanzibar in zone), which are giving problems with sfa
 db1 <- droplevels(db1)
+summary(db1)
 
-db1 <- db1 %>%
-  do(filter(., complete.cases(.)))
 
 # Save file
 saveRDS(db1, "Cache/db1.rds")
@@ -233,10 +233,12 @@ saveRDS(db1, "Cache/db1.rds")
 #######################################
 
 # Cobb Douglas
-olsCD1_harv <- lm(logyld_harv ~ noN + logN_harv + logasset + logae_harv + 
-               logseedq_harv +
+olsCD1_harv <- lm(logyld_harv ~ noN + logN_gps + logasset + logae_gps + 
+               logseedq_gps +
                logarea_gps +
-               mech + antrac + 
+               antrac + 
+               pestherb +
+               irrig +
                #inter_crop +
                slope + elevation +
                SOC2 + phdum2 + 
@@ -248,7 +250,9 @@ olsCD1_harv <- lm(logyld_harv ~ noN + logN_harv + logasset + logae_harv +
 olsCD1_gps <- lm(logyld_gps ~ noN + logN_gps + logasset + logae_gps + 
                     logseedq_gps +
                     logarea_gps +
-                    mech + antrac + 
+                    antrac + 
+                    pestherb +
+                    irrig +
                     #inter_crop +
                     slope + elevation +
                     SOC2 + phdum2 + 
@@ -267,9 +271,9 @@ skewness(residuals(olsCD1_gps))
 
 
 # Frontier estimation
-sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_harv + 
-                logasset + logae_harv + 
-                logseedq_harv +
+sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_gps + 
+                logasset + logae_gps + 
+                logseedq_gps +
                 logarea_gps +
                 pestherb +
                 irrig +
@@ -280,6 +284,7 @@ sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_harv +
                 rain_wq + rain_wq2+
                 crop_count2 + surveyyear2,
                 data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+
 
 summary(sfaCD1_harv, extraPar = TRUE)
 lrtest(sfaCD1_harv)
@@ -294,9 +299,10 @@ sfaCD1_gps <- sfa(logyld_gps ~ noN + logN_gps +
                      antrac + 
                      slope + elevation +
                      SOC2 + phdum2 + 
-                     rain_wq + rain_wq2+
+                     rain_wq + rain_wq2 +
                      crop_count2 + surveyyear2,                  ,
                    data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
+
 
 summary(sfaCD1_gps, extraPar = TRUE)
 lrtest(sfaCD1_gps)
@@ -310,12 +316,13 @@ lrtest(sfaCD1_gps)
 model <- sfaCD1_harv
 
 # Note that MPP cannot be calculated for plots with N=0 and are therefore set to 0.
-db2_sfaCD1_harv <- db1 %>% mutate(elastfert = coef(model)["logN_harv"],
+db2_sfaCD1_harv <- db1 %>% 
+  mutate(elastfert = coef(model)["logN_gps"],
                              phconstant = as.numeric(ifelse(phdum==2, coef(model)["phdum22"], 
                                                  ifelse(phdum==3, coef(model)["phdum23"],0))),
                              lnA = coef(model)["(Intercept)"] +
                                (coef(model)["noN"]*noN) +
-                               (coef(model)["logseedq_harv"]*logseedq_harv) +
+                               (coef(model)["logseedq_gps"]*logseedq_gps) +
                                (coef(model)["logarea_gps"]*logarea_gps) +
                                (coef(model)["irrig"]*irrig) +
                                (coef(model)["pestherb"]*pestherb) +
@@ -329,18 +336,18 @@ db2_sfaCD1_harv <- db1 %>% mutate(elastfert = coef(model)["logN_harv"],
                                (coef(model)["crop_count2"]*crop_count2) +
                                (coef(model)["surveyyear2"]*surveyyear2),
                              lnA2 = lnA,
-                             constantfactor = exp(lnA2)*elastfert*(ae^coef(model)["logae_harv"])*(asset^coef(model)["logasset"]),
-                             MPP= as.numeric(ifelse(N_harv==0,NA,exp(lnA2)*elastfert*(ae^coef(model)["logae_harv"])*(asset^coef(model)["logasset"])*(N_harv^(elastfert-1)))),
+                             constantfactor = exp(lnA2)*elastfert*(ae^coef(model)["logae_gps"])*(asset^coef(model)["logasset"]),
+                             MPP= as.numeric(ifelse(N_gps==0,NA,exp(lnA2)*elastfert*(ae^coef(model)["logae_gps"])*(asset^coef(model)["logasset"])*(N_gps^(elastfert-1)))),
                              Npm = (Pn/(constantfactor*Pc))^(1/(elastfert-1)),
-                             Ndif = N_harv-Npm
+                             Ndif = N_gps-Npm
                              )                       
 
 
 sumzone_sfaCD1_harv<- db2_sfaCD1_harv %>%
   group_by(CLIMATEZONE) %>%
   summarize(
-    Ncon=mean(ifelse(N_harv>0, N_harv, NA), na.rm = T),
-    N_harv=mean(N_harv, na.rm=T),
+    Ncon=mean(ifelse(N_gps>0, N_gps, NA), na.rm = T),
+    N_gps=mean(N_gps, na.rm=T),
     Npm=mean(Npm, na.rm=T),
     MPPmean=mean(MPP[!is.infinite(MPP)], na.rm=T),
     MVC=mean((Pc[!is.infinite(MPP)]*MPP[!is.infinite(MPP)])/Pn[!is.infinite(MPP)], na.rm=T),
@@ -368,7 +375,7 @@ model <- sfaCD1_harv
 
 db3 <- db2_sfaCD1_harv %>%
   ungroup() %>%
-  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, fs, YW, area_harv, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_harv, ae, logasset, asset, elastfert, N_harv, Y=yld_harv, Npm) %>%
+  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, area_harv, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_gps, ae, logasset, asset, elastfert, N_gps, Y=yld_harv, Npm) %>%
   mutate(
     Ycor = exp(as.numeric(fitted(model))+log(as.numeric(efficiencies(model)))), 
     err = Ycor-Y,
@@ -380,7 +387,6 @@ db3 <- db2_sfaCD1_harv %>%
 # A number of plots have yld higher than the estimated frontier (Y-TEY>0) caused by the random error. 
 # A large number of these plots do not use fertilizer. They probably have high yield because of measurement error, better soil properties or unknown factors.
 X_above_frontier <- filter(db3, Y-TEY>0)
-mean(db3$Y-db3$TEY)
 
 
 # 2. EY: Economic yield 
@@ -400,7 +406,7 @@ db3 <- mutate(db3, Npm = ifelse(Npm>Npy, Npy, Npm))
 db4 <- db3 %>%
   mutate(EY = exp(
     lnA2 +
-      coef(model)["logae_harv"]*logae_harv +
+      coef(model)["logae_gps"]*logae_gps +
       coef(model)["logasset"]*logasset +
       elastfert*log(Npm)))
 
@@ -415,37 +421,23 @@ db5 <- db4 %>%
     lnA + 
       coef(model)["pestherb"] +                   # assume all plots use pesticides and herbicides
       coef(model)["antrac"] +                     # assume all plots use animal traction
-      coef(model)["logae_harv"]*logae_harv*1.1 +
+      coef(model)["logae_gps"]*logae_gps*1.1 +
       coef(model)["logasset"]*logasset*1.1 +
       elastfert*log(Npy)))
 
 # 4. PY: Potential yield and HFY: Highest farmers yield
-# # Merge Yield potential with maize plot database
-# db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
-#   mutate(PY=PY*1000) %>% left_join(db5,.)
-# 
-# # A large number of plots have missing YW values because region is not covered by GYGA.
-# # We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
-# # Might scale this down to see the effect.
-# GYGA_YW <- max(GYGA$YW)*1000
-# db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
-
-# Rename YW into PY and express in kg
-db6 <- db5 %>%
-  rename(PY = YW) %>%
-  mutate(PY = PY*1000) %>%
+# Merge Yield potential with maize plot database
+db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% 
+  na.omit %>% unique() %>%
+  mutate(PY=PY*1000) %>% 
+  left_join(db5,.) %>%
+  do(filter(., complete.cases(.))) %>%
+  ungroup() %>%
   group_by(CLIMATEZONE) %>%
   mutate(HFY90 = quantile(Y, probs = 0.9, na.rm = TRUE),
          HFY95 = quantile(Y, probs = 0.95, na.rm = TRUE),
-         HFY100 = quantile(Y, probs = 1, na.rm = TRUE))
-
-check <- db5 %>%
-  ungroup() %>%
-  filter(CLIMATEZONE == "9901") %>%
-  mutate(max = quantile(Y, probs = 0.90, na.rm = TRUE))
-
-mean(check$Y)
-quantile(check$Y, probs = 0.90, na.rm = TRUE)
+         HFY100 = quantile(Y, probs = 1, na.rm = TRUE)) %>%
+  ungroup()
 
 #####################################################
 ### Yield levels consistency check and correction ###
@@ -553,7 +545,7 @@ summary(X_overall)
 
 
 # Create database with relevant variables for further analysis
-db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, fs, lat, lon, crop_count2, area_harv, yesN, Y, N_harv,
+db9_harv <- dplyr::select(db8, hhid, plotid, surveyyear, CLIMATEZONE, REGNAME, lat, lon, crop_count2, area_harv, yesN, Y, N_gps,
                           Ycor, TEY, EY, PFY, HFY90, HFY95, HFY100, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
                           EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
 
@@ -631,8 +623,8 @@ model <- sfaCD1_gps
 
 db3 <- db2_sfaCD1_gps %>%
   ungroup() %>%
-  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, YW, area_gps, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_gps, ae, logasset, asset, elastfert, N_gps, Y=yld_gps, Npm) %>%
-  mutate(
+  dplyr::select(hhid, plotid, surveyyear, ZONE, REGNAME, DISNAME, CLIMATEZONE, area_gps, crop_count2, lat, lon, lnA, lnA2, noN, yesN, logae_gps, ae, logasset, asset, elastfert, N_gps, Y=yld_gps, Npm) %>%
+      mutate(
     Ycor = exp(as.numeric(fitted(model))+log(as.numeric(efficiencies(model)))), 
     err = Ycor-Y,
     TEY = exp(as.numeric(fitted(model))),
@@ -681,24 +673,19 @@ db5 <- db4 %>%
       coef(model)["logasset"]*logasset*1.1 +
       elastfert*log(Npy)))
 
-# 4. PY: Potential yield
+# 4. PY: Potential yield and HFY: Highest farmers yield
 # Merge Yield potential with maize plot database
-# Merge Yield potential with maize plot database
-# db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% na.omit %>% 
-#   mutate(PY=PY*1000) %>% left_join(db5,.)
-# 
-# # A large number of plots have missing YW values because region is not covered by GYGA.
-# # We assume for the moment that country maximum water limited yield (Yw) is reasonable proxy for missing information.
-# # Might scale this down to see the effect.
-# GYGA_YW <- max(GYGA$YW)*1000
-# db6 <- mutate(db6, PY = ifelse(is.na(PY), GYGA_YW, PY))
-
-# Rename YW into PY and express in kg
-db6 <- db5 %>%
-  rename(PY = YW) %>%
-  mutate(PY = PY*1000) %>%
+db6 <- dbP %>% dplyr::select(hhid, plotid, surveyyear, PY = YW) %>% 
+  na.omit %>% unique() %>%
+  mutate(PY=PY*1000) %>% 
+  left_join(db5,.) %>%
+  do(filter(., complete.cases(.))) %>%
+  ungroup() %>%
   group_by(CLIMATEZONE) %>%
-  mutate(HFY = quantile(Ycor, probs = 0.9))
+  mutate(HFY90 = quantile(Y, probs = 0.9, na.rm = TRUE),
+         HFY95 = quantile(Y, probs = 0.95, na.rm = TRUE),
+         HFY100 = quantile(Y, probs = 1, na.rm = TRUE)) %>%
+  ungroup()
 
 #####################################################
 ### Yield levels consistency check and correction ###
@@ -806,10 +793,14 @@ summary(X_overall)
 
 
 # Create database with relevant variables for further analysis
-db9_gps <- dplyr::select(db8, hhid, plotid, surveyyear, ZONE, REGNAME, lat, lon, crop_count2, area_gps, yesN, Y, N_gps, Ycor, TEY, EY, PFY, HFY, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
-                     EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
+db9_gps <- dplyr::select(db8, hhid, plotid, surveyyear, CLIMATEZONE, REGNAME, lat, lon, crop_count2, area_gps, yesN, Y, N_gps, 
+                         Ycor, TEY, EY, PFY, HFY90, HFY95, HFY100, PY, ERROR_l, ERROR_s, TEYG_l, TEYG_s, EYG_l, EYG_s, 
+                         EUYG_l, EUYG_s, TYG_l, TYG_s, YG_l, YG_s, YG_l_Ycor, YG_s_Ycor)
 
 # Clean up
 rm(list =grep("X_", ls(), value = TRUE)) # remove checks
 rm(db3, db4, db5, db6, db6a, db7, db8)
 
+
+# Save data
+saveRDS(db9_gps, "Cache/db9_gps.rds")
