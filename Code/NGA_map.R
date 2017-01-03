@@ -39,7 +39,7 @@ CZ_target <- db9_gps %>%
   group_by(CLIMATEZONE) %>%
   summarise(NumberHH = length(unique(hhid)),
             Numberplot = n())
-CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot > 50] 
+CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot >= 50] 
 CZ_target <- droplevels(CZ_target)
 
 ### GYGA MAP PREPARATION

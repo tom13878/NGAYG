@@ -41,7 +41,7 @@ CZ_target <- db9_gps %>%
   group_by(CLIMATEZONE) %>%
   summarise(NumberHH = length(unique(hhid)),
             Numberplot = n())
-CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot > 50] 
+CZ_target <- CZ_target$CLIMATEZONE[CZ_target$Numberplot >= 50] 
 CZ_target <- droplevels(CZ_target)
 
 
@@ -60,7 +60,7 @@ Fig_price_maize = ggplot(data = as.data.frame(Prices_maize), aes(x = CLIMATEZONE
   geom_boxplot(outlier.colour = NA, fill = "#F8766D") +
   stat_boxplot(geom ='errorbar') +
   labs(x = "", 
-       y = "Price (XX Naira/ton)",
+       y = "Price (Naira/kg)",
        title = "Maize price") +
   guides(fill = F) +
   coord_cartesian(ylim=c(0, 85)) +
