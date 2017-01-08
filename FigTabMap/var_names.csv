@@ -1,0 +1,23 @@
+order,variable,variable_full,include
+1,yld_gps,Yield - plot based (kg/ha),Y
+2,yld_harv,Yield - harvested area based (kg/ha),Y
+3,YW,Potential water-limited yield (kg/ha),Y
+4,YG_gps,Yield gap - plot based ( %),Y
+5,YG_harv,Yield gap - harvested area based (%) ,Y
+6,area_gps,Plot area (ha),Y
+7,area_harv,Harvested area (ha),Y
+8,yesN,Use of nitrogen (1/0),Y
+9,Ncon,Nitrogen applied (kg/ha)*,Y
+10,ae,Household adult equivalency units (units/ha),N
+11,assetph,Assets ( XX/ha),N
+12,seedq_gps,Seeding rate (kg/ha),N
+13,pestherb,Agro chemical use (1/0),N
+14,antrac,Animal traction use (1/0),N
+15,SOC2,SOC,N
+16,slope,Slope,N
+17,elevation,Elevation,N
+18,rain_wq,Rain in wettest quarter (mm),N
+19,crop_count2,No other crops planted (1/0),N
+20,NumberHH,Number of households,Y
+21,Numberplot,Number of plots,Y
+22,sharePlots,Share of plots (%),Y

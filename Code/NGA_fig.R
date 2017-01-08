@@ -94,7 +94,8 @@ Fig_price = plot_grid(Fig_price_maize, Fig_price_nit)
 #Fig_price
 
 
-### YIELD LEVEL COMPARISON db9_harv
+### YIELD LEVEL COMPARISON 
+# db9_harv
 yield_comp_harv <- db9_harv %>%
   ungroup() %>%
   filter(CLIMATEZONE %in% CZ_target) %>%
@@ -129,7 +130,7 @@ Fig_YL_harv = ggplot(data = yield_comp_harv, aes(x = variable, y=mean_W)) +
 
 #Fig_YL_harv
 
-### YIELD LEVEL COMPARISON db9_harv
+# db9_harv
 yield_comp_gps <- db9_gps %>%
   ungroup() %>%
   filter(CLIMATEZONE %in% CZ_target) %>%
@@ -167,12 +168,58 @@ Fig_YL_gps = ggplot(data = yield_comp_gps, aes(x = variable, y=mean_W)) +
 # Combine plots
 Fig_YL = plot_grid(Fig_YL_harv, Fig_YL_gps)
 
+### YIELD COMPARISON v2
+# Combine data
+yield_comp_harv <- yield_comp_harv %>%
+  mutate(source = "harv")
+
+yield_comp_gps <- yield_comp_gps %>%
+  mutate(source = "gps")
+
+yield_comp <- bind_rows(yield_comp_harv, yield_comp_gps)
+
+# library(grid)
+plot_f <- function(df){
+  ggplot(data = df, aes(x = source, y=mean_W)) + 
+   geom_bar(stat="identity", colour = "black", position=position_dodge(0), width=0.95, aes(fill = variable)) +
+   facet_wrap(~variable, nrow =1) + 
+   geom_errorbar(aes(ymax = max, ymin = min), width = 0.25) +
+   guides(fill = F) +
+   theme_classic() +
+   labs(x = "",
+        y = ""
+        #title = unique(df$CLIMATEZONE)
+        ) +
+   theme(strip.background = element_blank(),
+         strip.text.x = element_text(face = "bold"),
+         plot.title = element_text(hjust = 0.5, vjust=0, size = 10),
+         panel.spacing = unit(0, "lines"))
+}
+
+p_yield_comp <- yield_comp %>%
+  group_by(CLIMATEZONE) %>%
+  do(plot = plot_f(.))
+
+
+p1 = p_yield_comp$plot[[1]]
+p2 = p_yield_comp$plot[[2]]
+p3 = p_yield_comp$plot[[3]]
+p4 = p_yield_comp$plot[[4]]
+p5 = p_yield_comp$plot[[5]]
+p6 = p_yield_comp$plot[[6]]
+p7 = p_yield_comp$plot[[7]]
+Fig_YL2 = plot_grid(p1, p2, p3, p4, p5, p6, p7, ncol = 1, labels = unique(yield_comp$CLIMATEZONE), label_size = 10)
+Fig_YL2
+
 ### COMPARE GPS AND HARV ESTIMATES
 dbtot <- bind_rows(db9_gps, db9_harv) %>%
   dplyr::select(hhid, plotid, Y, Ycor, TEY, EY, PFY, PY, HFY90, HFY95, HFY100, CLIMATEZONE, surveyyear, source) %>%
   gather(variable, value, -hhid, -plotid, -CLIMATEZONE, -surveyyear, -source) %>%
+  mutate(value = value/1000) %>%
   spread(source, value) %>%
-  filter(variable %in% c("Y", "EY", "TEY", "PFY"),  CLIMATEZONE %in% CZ_target)
+  filter(variable %in% c("Y", "EY", "TEY", "PFY"),  CLIMATEZONE %in% CZ_target) %>%
+  mutate(variable = factor(variable, levels = c("Y", "TEY", "EY", "PFY"), 
+                                     labels = c("Actual yield", "Technical efficient yield", "Economic yield", "Feasible yield")))
 
 Fig_gps_harv_comp <- ggplot() + 
   geom_point(data = dbtot, aes(x = gps, y = harv, colour = CLIMATEZONE)) +
@@ -181,16 +228,16 @@ Fig_gps_harv_comp <- ggplot() +
   geom_abline(intercept = 0, slope =1) +
   theme(strip.background = element_blank(),
         strip.text.x = element_text(face = "bold")) +
-  theme(aspect.ratio=1) +
-  labs(x = "Plot area based yield levels (kg/ha)", 
-       y = "Harvested area based yield levels (kg/ha)",
+  #theme(aspect.ratio=1) +
+  labs(x = "Plot area based yield levels (tons/ha)", 
+       y = "Harvested area based yield levels (tons/ha)",
        colour = "Climate zone") +
-  coord_cartesian(ylim=c(0, 15000),xlim=c(0, 15000)) +
-  scale_y_continuous(breaks=seq(0, 15000, 2500)) +
-  scale_x_continuous(breaks=seq(0, 15000, 2500)) +
+  coord_cartesian(ylim=c(0, 15),xlim=c(0, 15)) +
+  scale_y_continuous(labels = comma, breaks=seq(0, 15, 2.5)) +
+  scale_x_continuous(labels = comma, breaks=seq(0, 15, 2.5)) +
   theme(legend.position="bottom",
         legend.box="horizontal") +
-  guides(colour = guide_legend(title.position="top", title.hjust = 0.5))
+  guides(colour = guide_legend(title.position="top", title.hjust = 0.5, nrow=1))
 
 Fig_gps_harv_comp  
 

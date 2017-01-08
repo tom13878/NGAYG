@@ -25,7 +25,7 @@ sfaTable_f <- function(model, nc = 3){
                                 ifelse(P <= 0.05, "*", ""))))
     
   sfaTable <- data.frame(variable = varnames, stringsAsFactors=FALSE)
-  #sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, nc))
+  sfaTable$Coef. <- sprintf("%.3f", round(rawTable$Estimate, nc))
   #sfaTable$Coef. <- rawTable$Estimate
   sfaTable$"Std. Error" <- sprintf("%.3f", round(rawTable$"Std. Error", nc))
   #sfaTable$sign <- rawTable$sign
