@@ -39,7 +39,8 @@ source(file.path(root, "Code/NGA_map.R"))
 __Abstract__
 
 
-__Acknowledgements__
+__Acknowledgements__.
+
 We are grateful to the following persons for input and comments: Lenny van Bussel, Joao Vasco Silva. We thank the World Bank for making available an additional GPS dataset. We also would like to thank Lenis Saweda Liverpool-Tasie for assistance with the data. This work was supported by the International Maize and Wheat Improvement Center (CIMMYT) through the CGIAR research program on MAIZE and Wageningen UR.
 
 
@@ -135,7 +136,7 @@ GYGA_LSMS
 ##### Note: Coloured areas refer to the seven climate zones for which >=50 observations from the LSMS-ISA are available. Grey areas indicate climate zones for GYGA presents information but for which not enough LSMS-ISA observations are available. White areas are not covered by GYGA. Actual yield is based on the pooled sample and weighted by plot size. 
 
 
-## Farm and plot level data
+# Farm and plot level data
 The plot and farm level data come from the nationally representative 2010-11 and 2012-13 waves of the  Nigeria General Household Survey (GHS). In total the GHS is a cross section of 22,000 households, 5,000 of which were included as panel households as part of the Living Standards measurement Study Integrated Surveys in Agriculture (LSMS-ISA) initiative.  The focus of the LSMS-ISA is to improve the quality of data on the agricultural sector and was conducted by the National Bureau of Statistics in partnership with the Federal Ministry of Agriculture and Rural Development, the National Food Reserve Agency, the Bill and Melinda Gates Foundation and the World Bank. In each wave, households were visited twice reflecting the post planting and post harvest visits. The data was collected at several levels, including at the plot, household and enumeration area level, and the location of each household was GPS recorded with an offset to preserve household anonymity.
 
 ### Basic information
@@ -143,7 +144,7 @@ The agricultural questionnaire of the LSMS-ISA records key information at the pl
 
 Exploratory data analysis showed that several variables clearly fell outside a plausible range. We followed the approach of other studies that use similar plot and farm level surveys [@REF] and winsored outliers that were more than three standard deviations [@Absolute deviations?] from the median. Winsoring involves replacing extreme values with the value at a pre-defined threshold (in this case three standard deviations) instead of than dropping the observation completely. To deal with outliers in nitrogen application rates, we follow @SHEAHAN-CHECK and cap the use of nitrogen to 700 kg per hectare, the upper-limit of inorganic fertilizer use in the United States under irrigated conditions.[@CHECK]. We also decided to remove plots that have an area of less than 0.05 ha for which GPS measurements are less accurate and more than 10 ha, which we do not consider small scale farmers. Finally, we remove a small number of plots that have a maize yield of more than 15.9 tons per ha, the highest potential yield in Nigeria according to GYGA.
 
-To estimate the frontier yield response function we used all available data on maize production in Nigeria provided by the LSMS-ISA (@observations  in total). Out of these, @XX [@X] are located in GYGA climate zones (Figure X). In order to have sufficient observations, we focus the analysis on seven climate zones for which >=50 observations are available (@X% of the observations in climate zones).  Table 2 presents key statistics per climate zone and summary statistics for all variables are presented in the appendix. The table demonstrates the diversity in farming systems across climate zones in Nigeria. Zones 9301 9901 are characterised by relative high fertilizer application rates and yield, while zones 9701 and 9801 show relative low levels of intensification and yield. [@compare with systems?] 
+To estimate the frontier yield response function we used all available data on maize production in Nigeria provided by the LSMS-ISA (@observations  in total). Out of these, @XX [@X] are located in GYGA climate zones (Figure X). In order to have sufficient observations, we focus the analysis on seven climate zones for which >=50 observations are available (@X% of the observations in climate zones).  Table 2 presents key statistics per climate zone and summary statistics for all variables are presented in the appendix. The table demonstrates the diversity in farming systems across climate zones in Nigeria. Zones 9301 9901 are characterised by relative high fertilizer application rates and yield, while zones 9701 and 9801 show relative low levels of intensification and yield. [@compare with systems?]. The observed yield gaps are smaller than those in the GYGA, which was also found by @VanDijk2016 for Tanzania. Possible explanations for this include differences in samples (i.e. strong focus on smallholders in the LSMS-ISA), [@ADD]. Also note that we present area-weighted averages, which are up up to [@add] percent smaller than unweighted averages because of the inverse relationship between farm size and yield [@REF] that is also observed for Nigeria. Yield gaps using the unweighted average are very close to the gap in the GYGA.  
 
 
 **Table 2: Descriptive statistics per climate zone**
@@ -159,12 +160,12 @@ pander(Tab_CZ)
 ### Plot versus harvested area
 In yield gap analysis it is common practice to apply the FAO definition for actual (farm) yield, which  expresses yield relative to harvested land area [@Fischer2015]. In a recent study @Reynolds argue that this definition leads to serious overestimation of actual yield because it ignores crop losses that might occur between planting and harvesting. Hence, they recommend to use a definition of yield relative to crop area. Causes for the difference in area planted and area harvested include crop management factors (e.g. poor germination, damage from pests and diseases) and economic constraints (e.g. labor and capital constraints and shortage of market opportunities). These are precisely the issues that one aims to capture with yield gap analysis. It is likely that crop management and resource use decisions of farmers are based on the total plot area that they consider for agricultural production, not only the harvested area. Assessments using a definition based on harvested area therefore probably underestimate the yield gap. Using a definition based on plot area,  on the other hand, will probably overestimate the gap, in particular when part of a plot is not suitable for agricultural production (e.g. rocks) or when more than one crop is grown on a plot (e.g. intercropping or presence of fruit trees). Multicropping is an important issue in our sample as on @X of the plots more than one crop is grown. Yield based on harvest area and plot area can therefore be considered as upper and lower bounds of actual yield.
 
-The LSMS-ISA provides information on both plot area and harvested area so that we can investigate the choice of definition on yield gap measurement. Unfortunately harvested crop area is only available as a farmer self-reported estimate, while plot area is available as self-reported and gps measure. The latter is highly preferred as self-reported values are characterized by systematic errors [@Carletto2015a]. Although it is likely that self-reported harvested and plot area are biased, we assume that their relative value is less prone to error. Farmers are probably better able to assess the share of area planted than the absolute area. Hence, we estimate the harvested area as follows:    
+The LSMS-ISA provides information on both plot area and harvested area, which makes it possible to investigate their impact on yield gap measurement. Unfortunately harvested crop area is only available as a farmer self-reported estimate, while plot area is available as self-reported and gps measure. The latter is highly preferred as self-reported values are characterized by systematic errors [@Carletto2015a]. Although it is likely that self-reported harvested and plot area are biased, we assume that their relative value is less prone to error. Farmers are probably better able to judge the share of area planted than the absolute area of either harvested or plot area. Hence, we estimate the harvested area as follows:    
 
 $$ Harvested\:area= Plot\:area\:(gps) * \frac {Harvested\:area\: (farmer-assessed)}{Plot\:area\:(farmer-assessed)} $$
 
 ### Input and output price information
-A key objective of this study is to investigate the economic constraints to closing the yield gap. For this we need information on maize and fertilizer price. The LSMS-ISA presents plot-level information on both the value and quantity of maize sold  and fertilizer purchased. We used this to calculate plot level prices. Following @Sheahan we applied the chemical composition of fertilizer to estimate the price of Nitrogen. To remove the effect of outliers, we winsored all data at 1.5 times the median value. In case plot-level data was missing we used the regional, zonal or national average price level as a substitute.
+A key objective of this study is to investigate the economic constraints to closing the yield gap. For this we need information on maize and fertilizer price. The LSMS-ISA presents plot-level information on both the value and quantity of maize sold  and fertilizer purchased. We used this to calculate plot level prices. Following @Sheahan we applied the chemical composition of fertilizer (most common are @add) to estimate the price of Nitrogen. To remove the effect of outliers, we winsored all data at 1.5 times the median value. In case plot-level data was missing we used the regional, zonal or national average price level as a substitute.
 
 Figure 3 shows the distribution of maize and nitrogen prices per climate zone in Nigeria. Prices vary considerably within and between zones. In the Nothern (9301) and central climate zones (9401, 9501 and 10401) maize prices are relatively higher than in the Southern climate zones (9701, 9801, 9901). Nitrogen prices also show spatial variation but differences between climate zones are less pronounced. The wide range of prices illustrates that market conditions vary within Nigeria, which are likely to have an impact on producion decisions of the farmer and resulting yield levels.
 
@@ -185,16 +186,25 @@ To control for impact of soil conditions on actual yield, he LSMS-ISA data with 
 We use stochastic frontier analysis [@Meeusen1977; @Aigner1977] to estimate the frontier yield response curve in Figure 1. This approach is somewhat comparable to boundary line analysis [@REF], which is often used to estimate yield gaps. Similar to boundary line analysis stochastic frontier analysis also estimates an envelope curve that represents best-practice yield at each level of input. It has the the advantage that it simultaneously takes into account multiple inputs instead of addressing only one input as is the case in boundary analysis. Stochastic frontier analysis is increasingly used to estimate yield gaps [@Henderson2016, @Hoang2013, @Silva2016, @Neumann2010]. 
 
 The stochastic frontier yield response function is defined as follows: 
-$$ y_i=\alpha_0 + \sum\beta A_g + \sum\delta E_i + \sum\theta C + v_i-u_i $$
-where, $y_i$ is the logarithm of actual yield for maize plot $i$, $A_g$ is a vector containing agronomic amd biophysical variables at the grid $g$ level, $E_i$ is a vector containing economic variables, $C$ is a vector representing control variables, $\beta$, $\delta$, $\theta$ are vectors of parameters and $v_i$  is a symmetric random error. $u_i$ is non-negative random variable with a half normal distribution that measures the technical efficient yield gap.
+$$ y_i=\alpha_0 + \sum\beta C_g+\sum\eta A_i + \sum\delta E_i + \sum\theta z + v_i-u_i $$
+where, $y_i$ is the logarithm of actual yield in kilograms per hectare for maize plot $i$, $C_g$ is a vector containing climatic variables defined at the spatial grid $g$ level, $A_i$ is a vector with agronomic variables, $E_i$ is a vector containing economic production factors, and $z$ is a vector representing control variables. Most variables are in logarithmic form, which means their coefficient can be interpreted as an elasticity. Dummy variables are transformed using [@ADD] and can therefore also be interpreted as elasticities. For some of the climatic variables for we add second order polynominal variables to account for a non-linear relationship [@CHECK].  $v_i$  is a symmetric random error and $u_i$ is non-negative random variable with a half normal distribution that measures technical efficiency (i.e. the technical efficient yield gap).
 
-As small-scale farmer yield depends both on agronomic and economic conditions [@REFGuangyield, @Liverpool], we include both in the yield response function. Biophysical variables slope and elevation of the plot. Availability of water is measured by means of growing season rainfall data and a @dummy variable for irrigation. The use of fertilizer is captured by the application rate of nitrogen. As only @X percent of the plots in the sample uses fertilizer, we add a dummy to control for structural differences between plots with and witout fertilizer [@Battese1997].  We control for differences in soil by using information on soil organic carbon (SOC) stock and pH from the AfSIS dataset. We follow Burke [-@Burke] and apply threshold values for pH of 5.5 and 7, which demarcate the optimal conditions for maize growth. We include economic production variables that are related to farm management practices, farm assets, labour and  farm size (measured by total plot area). As labour data is missing in the first wave, we follow the approach of @Liverpool-Tasie2016a and use household adult equivalency units as a proxy. Finally, we include control variables for pure maize plots (sole crop as opposed to multicrop) and survey year. 
+Similar to other studies that estimate yield response functions using nationally representative farmer surveys [@REFGuangyield, @Liverpool], we include both climatic and agronomic variables as well as economic production factors in our model. Climatic indicators include growing season rainfall data, temperature, slope and elevation. Agronomic variables include the application rate of seeds and fertilizer (measured as nitrogen) and use of agro-chemicals (pesticides and/or herbicides). As only @X percent of the plots in the sample uses fertilizer, we add a dummy to control for structural differences between plots with and without fertilizer application [@Battese1997].  We control for differences in soil by using information on soil organic carbon (SOC) stock and pH from the AfSIS dataset. We follow Burke [-@Burke] and apply threshold values for pH of 5.5 and 7, which demarcate the optimal conditions for maize growth. Economic production factors include farm assets, use of animal traction, labour and farm size (measured by total plot area). As labour data is missing in the first wave, we follow the approach of @Liverpool-Tasie2016a and use household adult equivalency units as a proxy. Finally, we include control variables for pure maize plots (single crop as opposed to multicrop) and survey year. Table X in the Annex presents summary statistics.
 
 There exists a large literature on the functional form of the yield response function. Most studies that use experimental trail data have found that the find that linear response and plateau functions (i.e. Mitscherlich-Baule and Von Liebig) give the best results. This functional form assumes that plant growth is constrained by the most limiting input which is the same for all observations [@Paris1992, @ADD]. This assumption  is hard to maintain when analysing farmer survey data, which is characterised by a high level of heterogeniety. For this reason, quadratic, translog and Cobb-Douglas functions are typically applied when estimation yield response functions in socio-economic research settings [@Sherlund2002, @Sheahan]. The use of these more flexible functions is confirmed by Berck and Helfand [@Berck1990], who demonstrate that under heterogenous conditions the results from  linear response and plateau models converge to those of Cobb-Douglas and quadratic functions. To keep things tractable, we use the relative simple Cobb-Douglas function in this study. 
+
+To estimate economic yield we use the plot-level price information depicted in Figure 3 and calculated the economic optimum yield level, i.e. the level at which farmers maximize profits. As we only have price information on one input (nitrogen) we assume that all the other inputs remain constant when calculation optimum yield and nitrogen levels. This assumption is realistic in the short-run when assets and land are fixed but is less realistic in the longer-run when farmers have an incentive to purchase more land and equipment to maximize profits. The same approach is also used in the literature on optimum fertilzier use [@Sheahan, @Burke]. 
+
+We collected additional information on the amount of nitrogen ($X_f/X_p$  in Figure 1) that is required to attain potential yield in Nigeria. Information from experimental plots indicate that the maximum plot yield is achieved at around 300 kg N/ha. To reach feasible yield farmers will not only apply more fertilizer but overall move to a more intensive form of crop production, for example make more use of animal traction (only used by @x percent of the sample) and  equipment (e.g. power tillers and (small) tractors). As we do not have information on the input levels that are needed to produce feasible yield we assume that assets and labour will grow by 10%, animal traction is used uniformly and agro-chemicals are applied to all maize plots. We take Water-limited potential yield from the GYGA (Figure 2). 
+
+Finally, we performed a consistency check on our estimations by comparing them with potential yield (also presented in the GYGA) for each climate zone. Potential yield can be considered as the absolute bio-physical maximum production level and therefore should always be higher than the estimated yield levels. For @X plots, some of the estimations (mainly the feasible yield level) was too high, meaning our model overestimates yield. In such cases we winsored the estmations to the potential yield level.
 
 
 # Results
 ## Frontier yield response estimation
+Table 3 presents the stochastic frontier estimations for the two definitions of yield, relative to harvested area and relative to plot area. The coefficients and significancy are very similar for both models. From the climatic variables only rainfall is significant and exhibits a non-linear relationship with yield. From the agronomic variables, nitrogen and seed application are highly significant with elasticities of 0.11-0.13 and  0.06-0.08. There is no structural difference between plots with and without fertilizer application and use of agro-chemicals has no significant impact on maize yield. From the economic factors, labour input and animal traction (only in the harvested area model) are significant. Plots on which only one crop is grown have a higher yield than multi-crop plots. [@check which crops are also planted alongside maize]. The model also indicates that on average maize yield was relatively higher in the 2012/13, which can be because of a variety of reasons such as annual weather or economic shock. [@compare with TZA results].
+
+A likelihood ratio, which compared ompares the stochastic frontier model with a corresponding OLS model indicates the models are significantly different, which means there is significant technical inefficiency. This is confirmed by high $\gamma$ value in the model output, which indicates the importance of the inefficiency term $u$. A $\gamma$ of zero means there is no inefficiency and an OLS model would be appropriate. 
 
 **Table 3: Frontier yield response curve estimation**
 
@@ -202,27 +212,29 @@ There exists a large literature on the functional form of the yield response fun
 pander(Tbl_sfa)
 ```
 
-##### Note: 
+##### Note: coefficients for dummy variables have been transformed following @Kennedy1981 to measure impact in percentages; * Significant at 10% level; ** Significant at 5% level; *** Significant at 1% level.
 
-## Yield levels
+Figure 4 compares actual yield and the three estimated yield levels between models. By definition, actual yield relative to harvested area is identical (in case of single crop plots) or higher than actual yield relative to plot area. The figure shows a number of extreme values, where harvested area yield is much higher than plot area yield. This might be caused by exceptional cases where harvested area is relatively very small vis-a-vis plot area or the bias in the measurement of harvested area because of farmer self-assessment. These outliers will have only limited effect on the estimation of the yield levels because the stochastic frontier approach controls for random errors in the dependent variable. As expected, the majority of all three yield levels are higher for the harvested area based yield model. Slight differences in the coefficients of the models results in the opposite effect for a small number of observations. 
 
-**Figure 4: Yield levels: comparing models**
+[CHECK: MAKE SURE CZ have same colour in all graphs!!]
 
-```{r Figure-4}
+**Figure 4: Comparison of yield levels across models**
+
+```{r Figure-4,  fig.width=8, fig.height=8}
 Fig_gps_harv_comp
 ```
 
 ##### Source: 
 
-
+Fi
 
 
 ## Yield levels
 
-**Figure 5: Yield levels**
+**Figure 5: Yield levels per climate zone and model**
 
-```{r Figure-5}
-Fig_YL
+```{r Figure-5, fig.width=8, fig.height=8}
+Fig_YL2
 ```
 
 ##### Source: 
