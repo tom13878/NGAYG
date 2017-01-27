@@ -18,7 +18,7 @@ root <- find_root(is_rstudio_project)
 
 ### DATAPATH
 dataPath <- "C:\\Users\\dijk158\\OneDrive - IIASA\\SurveyData"
-dataPath <- "/Users/MMHOME/OneDrive - IIASA/SurveyData"
+#dataPath <- "/Users/MMHOME/OneDrive - IIASA/SurveyData"
 
 ### R SETTINGS
 options(scipen=999) # surpress scientific notation
@@ -61,7 +61,8 @@ rm(GYGA.Africa)
 # Get GYGA data and add YG and conbine CLIMATEZONE and PY
 GYGA_yg_df <- read_excel(file.path(GYGApath, "GygaRainfedMaizeSubSaharanAfrica.xlsx"), sheet=3) %>%
   dplyr::filter(CROP=="Rainfed maize", COUNTRY == "Nigeria") %>%
-  mutate(YG = (YW-YA)/YW*100,
+  mutate(CLIMATEZONE = as.character(CLIMATEZONE),
+         YG = (YW-YA)/YW*100,
          YW2 = YW*1000,
          #CZ_YW = paste0(CLIMATEZONE, " (", format(round(YW), nsmall=0, big.mark=","), " kg/ha)"),
          CZ_YW = paste0(CLIMATEZONE, " (", round(YW), " kg/ha)"),
@@ -96,7 +97,7 @@ yld <- db1 %>%
 
 
 # Map with target climate zones and average yield
-GYGA_LSMS <- ggplot() +
+Fig_GYGA_LSMS <- ggplot() +
   coord_equal() +
   labs(
     #title = "Yield gaps and average yield in Nigeria (%)",
@@ -114,6 +115,6 @@ GYGA_LSMS <- ggplot() +
   geom_point(data = yld, aes(x = lon, y = lat, size = av_yld2), colour="black") +
   scale_size_manual(name = "Average yield (ton/ha)", values = c(1, 2, 3, 4)) 
   
-GYGA_LSMS
+
 
 

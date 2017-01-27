@@ -47,10 +47,10 @@ sfaCD1_harv <- sfa(logyld_harv ~ noN + logN_gps +
                      antrac + 
                      slope + elevation +
                      SOC2 + phdum2 + 
-                     rain_wq + rain_wq2+
+                     rain_wq +
+                     #rain_wq2+
                      crop_count2 + surveyyear2,
-                   data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
-
+                    data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 summary(sfaCD1_harv, extraPar = TRUE)
 lrtest(sfaCD1_harv)
 
@@ -64,7 +64,8 @@ sfaCD1_gps <- sfa(logyld_gps ~ noN + logN_gps +
                     antrac + 
                     slope + elevation +
                     SOC2 + phdum2 + 
-                    rain_wq + rain_wq2+
+                    rain_wq + 
+                    #rain_wq2+
                     crop_count2 + surveyyear2,
                   data = db1, maxit = 1500, restartMax = 20, printIter = 1, tol = 0.000001)
 
