@@ -238,8 +238,8 @@ Fig_gps_harv_comp <- ggplot() +
        y = "Harvested area based yield levels (tons/ha)",
        colour = "Climate zone") +
   coord_cartesian(ylim=c(0, 15),xlim=c(0, 15)) +
-  scale_y_continuous(labels = comma, breaks=seq(0, 15, 2.5), expand = c(0, 0)) +
-  scale_x_continuous(labels = comma, breaks=seq(0, 15, 2.5), expand = c(0, 0)) +
+  scale_y_continuous(labels = comma, breaks=seq(0, 15, 2.5)) +
+  scale_x_continuous(labels = comma, breaks=seq(0, 15, 2.5)) +
   theme(legend.position="bottom",
         legend.box="horizontal") +
   guides(colour = guide_legend(title.position="top", title.hjust = 0.5, nrow=1))
