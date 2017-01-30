@@ -33,7 +33,7 @@ panderOptions('keep.trailing.zeros', TRUE)
 
 source(file.path(root, "Code/NGA_fig.R"))
 source(file.path(root, "Code/NGA_tab.R"))
-# source(file.path(root, "Code/NGA_map.R"))
+source(file.path(root, "Code/NGA_map.R"))
 ```
 
 __Abstract__
@@ -110,7 +110,7 @@ Potential water-limited yield is taken from the global yield gap atlas (GYGA, WW
 **Figure 2: Yield gap and LSMS**
 
 ```{r Figure-2}
-#Fig_GYGA_LSMS
+Fig_GYGA_LSMS
 ```
 
 ##### Source: Potential water-limited yield from GYGA and actual yield by enumeration area from the World Bank LSMS-ISA surveys.
