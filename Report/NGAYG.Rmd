@@ -166,7 +166,7 @@ To control for the impact of soil conditions on actual yield, we augment the LSM
 
 
 # Estimation of yield levels
-We use stochastic frontier analysis [@Meeusen1977; @Aigner1977] to estimate the frontier yield response curve in Figure 1. This approach is somewhat comparable to boundary line analysis [@Schnug1996], which is often used to estimate yield gaps. Similar to boundary line analysis stochastic frontier analysis also estimates an envelope curve that represents best-practice yield at each level of input. It has the the advantage that it simultaneously takes into account multiple inputs instead of addressing only one input as is the case in boundary analysis. Stochastic frontier analysis is increasingly used to estimate yield gaps [@Henderson2016, @Hoang2013, @Silva2016, @Neumann2010]. 
+We use stochastic frontier analysis [@Meeusen1977; @Aigner1977] to estimate the frontier yield response curve in Figure 1. This approach is somewhat comparable to boundary line analysis [@Schnug1996], which is often used to estimate yield gaps. Similar to boundary line analysis stochastic frontier analysis also estimates an envelope curve that represents best-practice yield at each level of input. It has the advantage that it simultaneously takes into account multiple inputs instead of addressing only one input as is the case in boundary analysis. Stochastic frontier analysis is increasingly used to estimate yield gaps [@Henderson2016, @Hoang2013, @Silva2016, @Neumann2010]. 
 
 The stochastic frontier yield response function is defined as follows: 
 $$ y_i=\alpha_0 + \sum\beta C_g+\sum\eta A_i + \sum\delta E_i + \sum\theta z + v_i-u_i $$
